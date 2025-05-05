@@ -1,70 +1,60 @@
-# Getting Started with Create React App
+# 📈 Simulador de Bolsa
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Este es un proyecto personal de simulador de bolsa hecho con **React** en el frontend y **FastAPI** en el backend. Los usuarios podrán registrarse, iniciar sesión, consultar su cartera de acciones, ver gráficos, realizar operaciones de compra/venta y revisar su historial de transacciones.
 
-## Available Scripts
+---
 
-In the project directory, you can run:
+## 🛠️ Tecnologías utilizadas
 
-### `npm start`
+- **Frontend:** [React](https://reactjs.org/) con [Vite](https://vitejs.dev/)
+- **Backend:** [FastAPI](https://fastapi.tiangolo.com/)
+- **Base de datos:** MySQL (ejecutada con Docker)
+- **Librerías adicionales:** Axios, SQLAlchemy, dotenv, etc.
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+---
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+## 🚀 Cómo ejecutar el proyecto localmente
 
-### `npm test`
+### 1. Clona el repositorio
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+```bash
+git clone https://github.com/tuusuario/Simulador-Bolsa.git
+cd Simulador-Bolsa
 
-### `npm run build`
+### 2. Levanta la base de datos con Docker
+bash
+Copiar
+Editar
+docker-compose up -d
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+Esto levantará un contenedor con MySQL y phpMyAdmin. Puedes acceder a phpMyAdmin en http://localhost:8080
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+Usuario: usuario
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+Contraseña: ***REMOVED***
 
-### `npm run eject`
+Asegúrate de que Docker esté instalado y en ejecución.
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+### 3. Ejecutar el backend
+bash
+Copiar
+Editar
+cd backend
+python -m venv venv
+source venv/bin/activate  # En Windows: venv\Scripts\activate
+pip install -r requirements.txt
+uvicorn main:app --reload
+Por defecto estará disponible en: http://localhost:8000
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+### 4. Ejecutar el frontend
+bash
+Copiado
+Editar
+cd frontend
+npm install
+npm run dev
+Por defecto se abrirá en: http://localhost:5173
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
-
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+📫 Autor
+Luan
+GitHub: @lechartfon

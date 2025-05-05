@@ -1,12 +1,29 @@
 from fastapi import FastAPI
-from auth import router as auth_router
-from database import engine
-from models import Base
+from starlette.middleware.cors import CORSMiddleware
 
 app = FastAPI()
 
-# Crea las tablas si no existen
-Base.metadata.create_all(bind=engine)
+origins = [
+    "http://localhost:5173",  
+    "http://127.0.0.1:5173", 
+]
 
-# Rutas de autenticación
-app.include_router(auth_router)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins, 
+    allow_credentials=True,
+    allow_methods=["*"],  
+    allow_headers=["*"],  
+)
+
+@app.get("/")
+async def read_root():
+    return {"message": "Hello World"}
+
+@app.post("/register")
+async def register(user_data: dict):
+    return {"message": "Usuario registrado", "data": user_data}
+
+@app.post("/login")
+async def login(user_data: dict):
+    return {"message": "Usuario logeado correctamente", "data": user_data}
