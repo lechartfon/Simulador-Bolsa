@@ -1,39 +1,53 @@
-import { useState } from 'react';
-import axios from 'axios';
+import { useState } from "react";
 
-export default function LoginForm() {
-  const [form, setForm] = useState({ username: '', password: '' });
-  const [msg, setMsg] = useState('');
+function LoginForm() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
-  const handleSubmit = async (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
+
     try {
-      const res = await axios.post('http://localhost:8000/login', form);
-      setMsg('Login exitoso');
-    } catch (err) {
-      setMsg(err.response?.data?.detail || 'Error al iniciar sesión');
+      const response = await fetch("http://localhost:8000/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json", 
+        },
+        body: JSON.stringify({
+          email: email,
+          password: password,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        console.log("Login exitoso:", data);
+      } else {
+        console.error("Login fallido:", data);
+      }
+    } catch (error) {
+      console.error("Error en la petición:", error);
     }
   };
 
   return (
-    <form onSubmit={handleSubmit}>
-      <h2>Login</h2>
+    <form onSubmit={handleLogin}>
       <input
         type="text"
-        placeholder="Usuario"
-        value={form.username}
-        onChange={(e) => setForm({ ...form, username: e.target.value })}
-        required
+        placeholder="Correo electrónico"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
       />
       <input
         type="password"
         placeholder="Contraseña"
-        value={form.password}
-        onChange={(e) => setForm({ ...form, password: e.target.value })}
-        required
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
       />
       <button type="submit">Iniciar sesión</button>
-      <p>{msg}</p>
     </form>
   );
 }
+
+export default LoginForm;

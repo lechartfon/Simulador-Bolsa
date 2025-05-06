@@ -1,29 +1,18 @@
 from fastapi import FastAPI
-from starlette.middleware.cors import CORSMiddleware
+from fastapi.middleware.cors import CORSMiddleware
+from auth import router as auth_router  
+from pydantic import BaseModel
+from fastapi.responses import JSONResponse
 
 app = FastAPI()
 
-origins = [
-    "http://localhost:5173",  
-    "http://127.0.0.1:5173", 
-]
-
+# Configurar CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins, 
+    allow_origins=["http://localhost:5173"],  # tu frontend
     allow_credentials=True,
-    allow_methods=["*"],  
-    allow_headers=["*"],  
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
-@app.get("/")
-async def read_root():
-    return {"message": "Hello World"}
-
-@app.post("/register")
-async def register(user_data: dict):
-    return {"message": "Usuario registrado", "data": user_data}
-
-@app.post("/login")
-async def login(user_data: dict):
-    return {"message": "Usuario logeado correctamente", "data": user_data}
+app.include_router(auth_router)
