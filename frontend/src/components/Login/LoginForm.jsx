@@ -1,26 +1,25 @@
 import { useState } from "react";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
 import "./LoginForm.css";
 
 function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch("http://localhost:8000/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+      const res = await axios.post("http://localhost:8000/login", {
+        username: email, // Map email to username for backend compatibility
+        password,
       });
-      const data = await response.json();
-      if (response.ok) {
-        console.log("Login exitoso:", data);
-      } else {
-        console.error("Login fallido:", data);
-      }
+      localStorage.setItem("token", res.data.access_token);
+      navigate("/transacciones");
     } catch (error) {
-      console.error("Error en la petición:", error);
+      console.error("Error during login:", error);
+      alert("Login failed. Please check your credentials.");
     }
   };
 
