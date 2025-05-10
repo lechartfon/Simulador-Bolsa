@@ -1,32 +1,43 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, APIRouter
 from fastapi.middleware.cors import CORSMiddleware
 from backend.auth import router as auth_router  
 from backend.routes.stocks import router as stocks_router
 from pydantic import BaseModel
 from fastapi.responses import JSONResponse
-from .models import Base, StockPrice
-from .database import engine
+from backend.models import Base, StockPrice
+from backend.database import engine
 from backend.database import SessionLocal
 from backend.models import Company, StockPrice
 from datetime import datetime, timedelta
 import random
+from fastapi import Depends, HTTPException
+from sqlalchemy.orm import Session
+from sqlalchemy import func
+from backend import models
+from backend.database import get_db
+from backend.auth import get_current_user
+import logging
+
+# Configurar el registro de errores
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 app = FastAPI()
 
-# Configurar CORS
+# Configurar CORS para permitir solicitudes desde el frontend
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],  # tu frontend
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_origins=["http://localhost:5173"],  # URL del frontend
+    allow_credentials=True,  # Importante: permite enviar cookies y cabeceras de autorización
+    allow_methods=["*"],  # Permitir todos los métodos HTTP
+    allow_headers=["*"],  # Permitir todas las cabeceras HTTP
+    expose_headers=["*"],  # Exponer todas las cabeceras de respuesta
 )
 
-app.include_router(auth_router)
+# Incluir los routers con prefijos explícitos
+app.include_router(auth_router, prefix="")
+app.include_router(stocks_router, prefix="")
 
-# Incluir el router de stocks
-app.include_router(stocks_router)
-
+# Crear las tablas en la base de datos
 Base.metadata.create_all(bind=engine)
 
 def initialize_default_companies():
@@ -91,3 +102,13 @@ def initialize_default_companies():
 
 # Llamamos la función cuando se arranca la app
 initialize_default_companies()
+
+# Ruta para verificar que el servidor está funcionando
+@app.get("/")
+async def root():
+    return {"message": "API del simulador de bolsa funcionando correctamente"}
+
+# Agregar un endpoint de prueba para el endpoint de compra
+@app.get("/transacciones/comprar/test")
+async def test_comprar():
+    return {"message": "Endpoint de compra accesible"}

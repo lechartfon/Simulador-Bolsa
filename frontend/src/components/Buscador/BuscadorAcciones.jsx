@@ -1,19 +1,24 @@
-import React, { useState } from 'react';
-
-const empresas = [
-    { nombre: 'Apple', ticker: 'AAPL' },
-    { nombre: 'Microsoft', ticker: 'MSFT' },
-    { nombre: 'Amazon', ticker: 'AMZN' },
-    { nombre: 'Tesla', ticker: 'TSLA' },
-    { nombre: 'Google', ticker: 'GOOGL' },
-    { nombre: 'Meta (Facebook)', ticker: 'META' },
-    { nombre: 'Netflix', ticker: 'NFLX' },
-    { nombre: 'Nvidia', ticker: 'NVDA' },
-];
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 
 const BuscadorAcciones = ({ onSelectEmpresa }) => {
     const [busqueda, setBusqueda] = useState('');
     const [resultados, setResultados] = useState([]);
+    const [empresas, setEmpresas] = useState([]);
+
+    useEffect(() => {
+        const fetchEmpresas = async () => {
+            try {
+                const response = await axios.get('http://localhost:8000/empresas');
+                console.log('Empresas recibidas del backend:', response.data);
+                setEmpresas(response.data);
+            } catch (error) {
+                console.error('Error al obtener las empresas:', error);
+            }
+        };
+
+        fetchEmpresas();
+    }, []);
 
     const handleChange = (e) => {
         const valor = e.target.value;
@@ -25,15 +30,16 @@ const BuscadorAcciones = ({ onSelectEmpresa }) => {
         }
 
         const filtrados = empresas.filter(empresa =>
-            empresa.nombre.toLowerCase().includes(valor.toLowerCase()) ||
-            empresa.ticker.toLowerCase().includes(valor.toLowerCase())
+            empresa.name.toLowerCase().includes(valor.toLowerCase()) ||
+            empresa.symbol.toLowerCase().includes(valor.toLowerCase())
         );
 
         setResultados(filtrados);
     };
 
     const handleSeleccion = (empresa) => {
-        setBusqueda(empresa.nombre); // opcional: mostrar el nombre en el input
+        console.log('Empresa seleccionada:', empresa);
+        setBusqueda(empresa.name);
         setResultados([]);
         onSelectEmpresa(empresa);
     };
@@ -72,7 +78,7 @@ const BuscadorAcciones = ({ onSelectEmpresa }) => {
                             onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f0f0f0'}
                             onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'white'}
                         >
-                            {empresa.nombre} ({empresa.ticker})
+                            {empresa.name} ({empresa.symbol})
                         </li>
                     ))}
                 </ul>

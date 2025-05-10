@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import "./LoginForm.css";
@@ -6,22 +6,60 @@ import "./LoginForm.css";
 function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    setError("");
     try {
+      console.log("Iniciando sesión con:", { username: email, password: "***" });
+      
       const res = await axios.post("http://localhost:8000/login", {
-        username: email, // Map email to username for backend compatibility
+        username: email, 
         password,
       });
-      localStorage.setItem("token", res.data.access_token);
-      navigate("/transacciones");
+      
+      console.log("Respuesta del login:", res.data);
+      
+      if (res.data.access_token) {
+        // Guardar el token con el prefijo "Bearer "
+        const token = res.data.access_token;
+        localStorage.setItem("token", token);
+        console.log("Token guardado:", token);
+        
+        // Probar que el token funciona
+        try {
+          const testRes = await axios.get("http://localhost:8000/empresas", {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          });
+          console.log("Test de token exitoso:", testRes.status);
+          navigate("/transacciones");
+        } catch (testError) {
+          console.error("Error al probar el token:", testError);
+          setError("Error al verificar la sesión. Por favor, intenta nuevamente.");
+        }
+      } else {
+        console.error("Error: No se recibió token en la respuesta");
+        setError("Error al iniciar sesión: No se recibió token del servidor");
+      }
     } catch (error) {
-      console.error("Error during login:", error);
-      alert("Login failed. Please check your credentials.");
+      console.error("Error during login:", error.response ? error.response.data : error);
+      setError("Login failed. Please check your credentials.");
     }
   };
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    navigate("/login");
+  };
+
+  useEffect(() => {
+    // Al cargar el componente, limpiar cualquier token existente
+    localStorage.removeItem("token");
+  }, []);
 
   return (
     <div className="page-container">
@@ -53,10 +91,14 @@ function LoginForm() {
                   required
                 />
               </div>
+              {error && <div className="error-message" style={{color: 'red', marginBottom: '10px'}}>{error}</div>}
               <button type="submit" className="btn">
                 Iniciar sesión
               </button>
             </form>
+            <button onClick={handleLogout} className="btn logout-btn">
+              Cerrar sesión
+            </button>
           </div>
         </div>
       </div>
