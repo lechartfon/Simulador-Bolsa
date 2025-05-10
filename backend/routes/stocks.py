@@ -3,14 +3,13 @@ from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 from ..database import get_db, SessionLocal
 from ..models import StockPrice, Company, Wallet, Transaction, TransactionType
-from ..services.stock_data import generate_historical_data
 import datetime
 from pydantic import BaseModel
 from ..auth import get_current_user, verify_token
 from .. import models
 import logging
 from fastapi.security import OAuth2PasswordBearer
-from typing import Optional
+from typing import Optional, Dict, Any
 import traceback
 from decimal import Decimal
 
@@ -22,6 +21,42 @@ class CompraRequest(BaseModel):
     company_id: int
     quantity: int
     price_per_share: float
+
+class WalletResponse(BaseModel):
+    balance: float
+    user_id: int
+
+@router.get("/wallet", response_model=Dict[str, Any])
+async def get_wallet_balance(
+    user: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Obtiene el saldo actual de la billetera del usuario autenticado.
+    Si el usuario no tiene billetera, crea una con saldo inicial.
+    """
+    try:
+        wallet = db.query(Wallet).filter(Wallet.user_id == user.id).first()
+        
+        # Si no existe una billetera, crear una nueva
+        if not wallet:
+            logging.info(f"Creando nueva billetera para usuario: {user.id}")
+            wallet = Wallet(user_id=user.id, balance=50000)
+            db.add(wallet)
+            db.commit()
+            db.refresh(wallet)
+        
+        # Convertir a float para la respuesta
+        balance = float(wallet.balance)
+        return {
+            "balance": balance,
+            "user_id": user.id
+        }
+    
+    except Exception as e:
+        logging.error(f"Error al obtener billetera: {str(e)}")
+        logging.error(traceback.format_exc())
+        raise HTTPException(status_code=500, detail=f"Error al obtener balance: {str(e)}")
 
 @router.get("/stocks/{company_name}")
 def get_stock_data(company_name: str, db: Session = Depends(get_db)):

@@ -1,5 +1,5 @@
 from .database import Base, engine
-from .models import StockPrice, User
+from .models import Company, User, StockPrice, Wallet, Transaction, Classroom, ClassroomMembership
 
 # Crear todas las tablas definidas en los modelos
 if __name__ == "__main__":

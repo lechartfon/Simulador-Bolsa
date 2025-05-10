@@ -1,10 +1,20 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Highcharts from 'highcharts/highstock';
-import { simulateGBM } from '../../utils/simulateGBM';
+import axios from 'axios';
 
+window.chartData = window.chartData || {};
+
+/**
+ * Componente para mostrar gráfica de precios de acciones
+ * @param {Object} props - Propiedades del componente
+ * @param {string} props.company - Nombre de la empresa
+ * @param {Object} props.refExterno - Referencia externa para acceder al gráfico desde otros componentes
+ */
 const StockChart = ({ company, refExterno }) => {
   const chartContainerRef = useRef(null);
   const chartRef = useRef(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [lastPrice, setLastPrice] = useState(null);
 
   useEffect(() => {
     if (refExterno) {
@@ -13,39 +23,64 @@ const StockChart = ({ company, refExterno }) => {
 
     if (!company) return;
 
-    // Parámetros aleatorios por empresa
-    const S0 = 20 + Math.random() * 180;            // precio inicial entre 20 y 200
-    const mu = 0.0005 + (Math.random() - 0.5) * 0.0002;
-    const sigma = 0.01 + Math.random() * 0.02;
-
-    // Simular 180 días
-    const raw = simulateGBM({ S0, mu, sigma, days: 180 });
-    const data = raw.map((p, i) => [
-      Date.now() - (180 - i) * 24 * 3600 * 1000,
-      p
-    ]);
-
-    if (chartRef.current) {
-      chartRef.current.series[0].setData(data);
-      chartRef.current.setTitle({ text: `Simulación GBM: ${company}` });
-    } else {
-      chartRef.current = Highcharts.stockChart(
-        chartContainerRef.current,
-        {
-          rangeSelector: { selected: 1 },
-          title: { text: `Simulación GBM: ${company}` },
-          series: [{
-            name: company,
-            data,
-            tooltip: { valueDecimals: 2 }
-          }]
+    const fetchStockData = async () => {
+      setIsLoading(true);
+      try {
+        const response = await axios.get(`http://localhost:8000/stocks/${encodeURIComponent(company)}`);
+        const data = response.data;
+        
+        if (data && data.length > 0) {
+          window.chartData[company] = data;
+          
+          const lastPoint = data[data.length - 1];
+          if (lastPoint && lastPoint.length >= 2) {
+            setLastPrice(lastPoint[1]);
+            window.chartData[`${company}_lastPrice`] = lastPoint[1];
+          }
         }
-      );
-    }
+        
+        if (chartRef.current) {
+          chartRef.current.series[0].setData(data);
+          chartRef.current.setTitle({ text: `Histórico: ${company}` });
+          chartRef.current.lastPrice = lastPoint ? lastPoint[1] : null;
+        } else {
+          chartRef.current = Highcharts.stockChart(
+            chartContainerRef.current,
+            {
+              rangeSelector: { selected: 1 },
+              title: { text: `Histórico: ${company}` },
+              series: [{
+                name: company,
+                data,
+                tooltip: { valueDecimals: 2 }
+              }]
+            }
+          );
+          
+          if (chartRef.current) {
+            chartRef.current.lastPrice = lastPoint ? lastPoint[1] : null;
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching stock data:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchStockData();
   }, [company, refExterno]);
 
   return (
-    <div ref={chartContainerRef} style={{ height: '500px', minWidth: '600px' }} />
+    <div>
+      {isLoading && <div style={{ textAlign: 'center', marginBottom: '10px' }}>Cargando datos...</div>}
+      <div ref={chartContainerRef} style={{ height: '500px', minWidth: '600px' }} />
+      {lastPrice && (
+        <div style={{ textAlign: 'right', marginTop: '10px', fontWeight: 'bold' }}>
+          Último precio: {lastPrice.toFixed(2)}€
+        </div>
+      )}
+    </div>
   );
 };
 

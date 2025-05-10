@@ -1,5 +1,5 @@
 from .database import Base
-from sqlalchemy import Column, Integer, String, Float, ForeignKey, DateTime, DECIMAL
+from sqlalchemy import Column, Integer, String, Float, ForeignKey, DateTime, DECIMAL, Boolean
 from sqlalchemy.sql import func
 import enum 
 from sqlalchemy import Enum
@@ -20,6 +20,7 @@ class User(Base):
     hashed_password = Column(String(100), nullable=False)
     wallet = relationship("Wallet", back_populates="user", uselist=False)
     transactions = relationship("Transaction", back_populates="user")
+    memberships = relationship("ClassroomMembership", back_populates="user")
 
 class Company(Base):
     __tablename__ = "companies"
@@ -51,3 +52,22 @@ class Transaction(Base):
     timestamp = Column(DateTime, default=func.now())
     user = relationship("User", back_populates="transactions")
     company = relationship("Company", back_populates="transactions")
+
+class Classroom(Base):
+    __tablename__ = "classrooms"
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String(100), nullable=False)
+    code = Column(String(10), unique=True, nullable=False)
+    creator_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    created_at = Column(DateTime, default=func.now())
+    members = relationship("ClassroomMembership", back_populates="classroom")
+    
+class ClassroomMembership(Base):
+    __tablename__ = "classroom_memberships"
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    classroom_id = Column(Integer, ForeignKey("classrooms.id"), nullable=False)
+    is_teacher = Column(Boolean, default=False)
+    joined_at = Column(DateTime, default=func.now())
+    user = relationship("User", back_populates="memberships")
+    classroom = relationship("Classroom", back_populates="members")
