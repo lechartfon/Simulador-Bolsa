@@ -122,6 +122,13 @@ const TransaccionesPage = () => {
           <Button 
             color="inherit" 
             component={Link} 
+            to="/portfolio"
+          >
+            Mi Portafolio
+          </Button>
+          <Button 
+            color="inherit" 
+            component={Link} 
             to="/classroom"
             startIcon={<ClassIcon />}
           >
