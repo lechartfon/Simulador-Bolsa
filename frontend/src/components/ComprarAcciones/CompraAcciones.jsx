@@ -58,6 +58,11 @@ const CompraAcciones = ({ empresa, chartRef, dineroDisponible, onCompraExitosa }
     }
   }, [empresa]);
 
+  // Resetear precio actual cada vez que cambia la empresa
+  useEffect(() => {
+    setPrecioActual(null);
+  }, [empresa]);
+
   useEffect(() => {
     const obtenerPrecio = async () => {
       if (empresa && empresa.name) {
@@ -132,16 +137,12 @@ const CompraAcciones = ({ empresa, chartRef, dineroDisponible, onCompraExitosa }
     
     obtenerPrecio();
     
-    if (!precioActual) {
-      const timer = setTimeout(() => {
-        if (!precioActual) {
-          obtenerPrecio();
-        }
-      }, 1500);
-      
-      return () => clearTimeout(timer);
-    }
-  }, [chartRef, empresa, precioActual]);
+    const timer = setTimeout(() => {
+      obtenerPrecio();
+    }, 1000);
+    
+    return () => clearTimeout(timer);
+  }, [chartRef, empresa]);
 
   const handleCompra = async () => {
     if (!empresa) {
