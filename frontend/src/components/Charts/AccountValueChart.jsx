@@ -19,30 +19,39 @@ const AccountValueChart = ({ accountValue, cashBalance, stocksValue }) => {
       const cashData = [];
       const stocksData = [];
       
-      const currentTotal = accountValue || 10000;
-      const currentCash = cashBalance || 5000;
-      const currentStocks = stocksValue || 5000;
+      const currentTotal = accountValue || 50000;
+      const currentCash = cashBalance || 50000;
+      const currentStocks = stocksValue || 0;
       
-      const cashRatio = currentCash / currentTotal;
-      const stocksRatio = currentStocks / currentTotal;
+      // Check if we're dealing with a new account (only cash, no stocks)
+      const isNewAccount = currentStocks === 0 && Math.abs(currentCash - 50000) < 0.01;
       
       for (let i = 29; i >= 0; i--) {
         const date = new Date();
         date.setDate(today.getDate() - i);
         const timestamp = date.getTime();
         
-        const randomFactor = 0.95 + (Math.random() * 0.1);
-        const dayFactor = 0.95 + ((29 - i) / 29) * 0.1;
-        
-        const value = currentTotal * randomFactor * dayFactor;
-        
-        const stocksRandomFactor = 0.90 + (Math.random() * 0.2);
-        const tempStocksValue = (value * stocksRatio) * stocksRandomFactor;
-        const tempCashValue = value - tempStocksValue;
-        
-        data.push([timestamp, Math.round(value * 100) / 100]);
-        cashData.push([timestamp, Math.round(tempCashValue * 100) / 100]);
-        stocksData.push([timestamp, Math.round(tempStocksValue * 100) / 100]);
+        if (isNewAccount) {
+          // For new accounts, just use constant values (50000€)
+          data.push([timestamp, 50000]);
+          cashData.push([timestamp, 50000]);
+          stocksData.push([timestamp, 0]);
+        } else {
+          // For active accounts with history, generate some mock historical data
+          const randomFactor = 0.95 + (Math.random() * 0.1);
+          const dayFactor = 0.95 + ((29 - i) / 29) * 0.1;
+          
+          const value = currentTotal * randomFactor * dayFactor;
+          
+          const stocksRandomFactor = 0.90 + (Math.random() * 0.2);
+          const stockRatio = currentTotal > 0 ? (currentStocks / currentTotal) : 0;
+          const tempStocksValue = (value * stockRatio) * stocksRandomFactor;
+          const tempCashValue = value - tempStocksValue;
+          
+          data.push([timestamp, Math.round(value * 100) / 100]);
+          cashData.push([timestamp, Math.round(tempCashValue * 100) / 100]);
+          stocksData.push([timestamp, Math.round(tempStocksValue * 100) / 100]);
+        }
       }
       
       if (data.length > 0) {
@@ -66,7 +75,6 @@ const AccountValueChart = ({ accountValue, cashBalance, stocksValue }) => {
       } else {
         chartRef.current = Highcharts.chart(chartContainerRef.current, {
           chart: {
-            type: 'area',
             height: 400,
             spacingRight: 20,
             events: {
@@ -158,8 +166,7 @@ const AccountValueChart = ({ accountValue, cashBalance, stocksValue }) => {
             shadow: true
           },
           plotOptions: {
-            area: {
-              stacking: 'normal',
+            series: {
               marker: {
                 enabled: false,
                 radius: 4,
@@ -174,9 +181,7 @@ const AccountValueChart = ({ accountValue, cashBalance, stocksValue }) => {
                 hover: {
                   lineWidth: 2
                 }
-              }
-            },
-            series: {
+              },
               animation: {
                 duration: 1000
               }
@@ -187,7 +192,7 @@ const AccountValueChart = ({ accountValue, cashBalance, stocksValue }) => {
             type: 'spline',
             data: data,
             color: '#1976d2',
-            lineWidth: 2,
+            lineWidth: 3,
             marker: {
               enabled: false
             },
@@ -195,38 +200,26 @@ const AccountValueChart = ({ accountValue, cashBalance, stocksValue }) => {
             showInLegend: true
           }, {
             name: 'Efectivo',
-            type: 'area',
+            type: 'spline',
             data: cashData,
             color: '#4caf50',
-            fillColor: {
-              linearGradient: {
-                x1: 0,
-                y1: 0,
-                x2: 0,
-                y2: 1
-              },
-              stops: [
-                [0, Highcharts.color('#4caf50').setOpacity(0.6).get('rgba')],
-                [1, Highcharts.color('#4caf50').setOpacity(0.1).get('rgba')]
-              ]
-            }
+            lineWidth: 2,
+            marker: {
+              enabled: false
+            },
+            enableMouseTracking: true,
+            showInLegend: true
           }, {
             name: 'Acciones',
-            type: 'area',
+            type: 'spline',
             data: stocksData,
             color: '#ff9800',
-            fillColor: {
-              linearGradient: {
-                x1: 0,
-                y1: 0,
-                x2: 0,
-                y2: 1
-              },
-              stops: [
-                [0, Highcharts.color('#ff9800').setOpacity(0.6).get('rgba')],
-                [1, Highcharts.color('#ff9800').setOpacity(0.1).get('rgba')]
-              ]
-            }
+            lineWidth: 2,
+            marker: {
+              enabled: false
+            },
+            enableMouseTracking: true,
+            showInLegend: true
           }, {
             name: 'Valor actual',
             type: 'scatter',
