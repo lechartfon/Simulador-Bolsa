@@ -4,6 +4,7 @@ import Register from './components/Register/RegisterForm';
 import Transacciones from './pages/Transacciones';
 import Classroom from './pages/Classroom';
 import Portfolio from './pages/Portfolio';
+import Dashboard from './pages/Dashboard';
 
 function App() {
   return (
@@ -14,7 +15,8 @@ function App() {
         <Route path="/Transacciones" element={<Transacciones />} />
         <Route path="/classroom" element={<Classroom />} />
         <Route path="/portfolio" element={<Portfolio />} />
-        <Route path="/" element={<Transacciones />} />
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/" element={<Dashboard />} />
       </Routes>
     </Router>
   );

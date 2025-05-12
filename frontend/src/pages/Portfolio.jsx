@@ -38,6 +38,7 @@ import ArrowDropUpIcon from '@mui/icons-material/ArrowDropUp';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import SellIcon from '@mui/icons-material/Sell';
 import HistoryIcon from '@mui/icons-material/History';
+import DashboardIcon from '@mui/icons-material/Dashboard';
 
 // Componente TabPanel para las pestañas
 function TabPanel(props) {
@@ -268,6 +269,14 @@ const PortfolioPage = () => {
             startIcon={<ClassIcon />}
           >
             Ver Competición
+          </Button>
+          <Button 
+            color="inherit" 
+            component={Link} 
+            to="/dashboard" 
+            startIcon={<DashboardIcon />}
+          >
+            Dashboard
           </Button>
           <Button 
             color="inherit" 

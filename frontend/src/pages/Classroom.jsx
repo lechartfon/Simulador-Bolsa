@@ -20,6 +20,7 @@ import {
 } from '@mui/material';
 import ExitToAppIcon from '@mui/icons-material/ExitToApp';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import DashboardIcon from '@mui/icons-material/Dashboard';
 
 const Classroom = () => {
   const [classrooms, setClassrooms] = useState([]);
@@ -104,6 +105,14 @@ const Classroom = () => {
             startIcon={<ArrowBackIcon />}
           >
             Volver a Transacciones
+          </Button>
+          <Button 
+            color="inherit" 
+            component={Link} 
+            to="/dashboard"
+            startIcon={<DashboardIcon />}
+          >
+            Dashboard
           </Button>
           <Button 
             color="inherit" 

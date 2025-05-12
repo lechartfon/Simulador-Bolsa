@@ -20,6 +20,7 @@ import {
 import ExitToAppIcon from '@mui/icons-material/ExitToApp';
 import ClassIcon from '@mui/icons-material/Class';
 import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
+import DashboardIcon from '@mui/icons-material/Dashboard';
 
 const TransaccionesPage = () => {
   const [empresaSeleccionada, setEmpresaSeleccionada] = useState(null);
@@ -133,6 +134,14 @@ const TransaccionesPage = () => {
             startIcon={<ClassIcon />}
           >
             Ver Competición
+          </Button>
+          <Button 
+            color="inherit" 
+            component={Link} 
+            to="/dashboard"
+            startIcon={<DashboardIcon />}
+          >
+            Dashboard
           </Button>
           <Button 
             color="inherit" 
