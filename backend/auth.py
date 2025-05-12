@@ -77,6 +77,15 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
     logging.info(f"Usuario autenticado: {user.email}")
     return user
 
+def get_admin_user(current_user: User = Depends(get_current_user)):
+    if current_user.email != "admin@admin":
+        logging.error(f"Usuario {current_user.email} intentó acceder a una función de administrador")
+        raise HTTPException(
+            status_code=403,
+            detail="Esta función solo está disponible para administradores"
+        )
+    return current_user
+
 @router.post("/register")
 def register(data: RegisterSchema, db: Session = Depends(get_db)):
     try:
@@ -130,4 +139,11 @@ def login(data: LoginSchema, db: Session = Depends(get_db)):
     token_data = {"sub": user.email}
     token = create_access_token(data=token_data)
     logging.info(f"Login exitoso para usuario: {data.username}")
-    return {"access_token": token, "token_type": "bearer"}
+    return {
+        "access_token": token, 
+        "token_type": "bearer",
+        "user": {
+            "id": user.id,
+            "email": user.email
+        }
+    }

@@ -21,6 +21,7 @@ class User(Base):
     wallet = relationship("Wallet", back_populates="user", uselist=False)
     transactions = relationship("Transaction", back_populates="user")
     memberships = relationship("ClassroomMembership", back_populates="user")
+    news = relationship("News", back_populates="creator")
 
 class Company(Base):
     __tablename__ = "companies"
@@ -71,3 +72,15 @@ class ClassroomMembership(Base):
     joined_at = Column(DateTime, default=func.now())
     user = relationship("User", back_populates="memberships")
     classroom = relationship("Classroom", back_populates="members")
+    
+class News(Base):
+    __tablename__ = "news"
+    id = Column(Integer, primary_key=True, index=True)
+    title = Column(String(200), nullable=False)
+    content = Column(String(2000), nullable=False)
+    url = Column(String(500), nullable=False)
+    image_url = Column(String(500), nullable=True)
+    created_at = Column(DateTime, default=func.now())
+    updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
+    created_by = Column(Integer, ForeignKey("users.id"), nullable=False)
+    creator = relationship("User", back_populates="news")

@@ -26,9 +26,14 @@ function LoginForm() {
         // Guardar el token con el prefijo "Bearer "
         const token = res.data.access_token;
         localStorage.setItem("token", token);
+        
+        if (res.data.user) {
+          localStorage.setItem("user", JSON.stringify(res.data.user));
+          console.log("Usuario guardado:", res.data.user);
+        }
+        
         console.log("Token guardado:", token);
         
-        // Probar que el token funciona
         try {
           const testRes = await axios.get("http://localhost:8000/empresas", {
             headers: {
@@ -53,12 +58,13 @@ function LoginForm() {
 
   const handleLogout = () => {
     localStorage.removeItem("token");
+    localStorage.removeItem("user");
     navigate("/login");
   };
 
   useEffect(() => {
-    // Al cargar el componente, limpiar cualquier token existente
     localStorage.removeItem("token");
+    localStorage.removeItem("user");
   }, []);
 
   return (

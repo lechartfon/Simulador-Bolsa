@@ -5,6 +5,7 @@ import Transacciones from './pages/Transacciones';
 import Classroom from './pages/Classroom';
 import Portfolio from './pages/Portfolio';
 import Dashboard from './pages/Dashboard';
+import News from './pages/News';
 
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
         <Route path="/classroom" element={<Classroom />} />
         <Route path="/portfolio" element={<Portfolio />} />
         <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/news" element={<News />} />
         <Route path="/" element={<Dashboard />} />
       </Routes>
     </Router>
