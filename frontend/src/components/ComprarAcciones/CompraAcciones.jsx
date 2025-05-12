@@ -61,6 +61,32 @@ const CompraAcciones = ({ empresa, chartRef, dineroDisponible, onCompraExitosa }
   // Resetear precio actual cada vez que cambia la empresa
   useEffect(() => {
     setPrecioActual(null);
+    
+    const fetchNewPrice = async () => {
+      if (empresa && empresa.name) {
+        try {
+          console.log("Forzando actualización del precio para:", empresa.name);
+          const response = await axios.get(`http://localhost:8000/stocks/${encodeURIComponent(empresa.name)}`);
+          const data = response.data;
+          
+          if (data && data.length > 0) {
+            const lastPoint = data[data.length - 1];
+            if (lastPoint && lastPoint.length >= 2) {
+              const price = lastPoint[1]; 
+              console.log("Precio actualizado:", price);
+              setPrecioActual(price);
+              
+              if (!window.chartData) window.chartData = {};
+              window.chartData[`${empresa.name}_lastPrice`] = price;
+            }
+          }
+        } catch (error) {
+          console.error("Error al obtener precio actualizado:", error);
+        }
+      }
+    };
+    
+    fetchNewPrice();
   }, [empresa]);
 
   useEffect(() => {

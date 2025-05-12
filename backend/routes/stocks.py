@@ -13,6 +13,7 @@ from typing import Optional, Dict, Any, List
 import traceback
 from decimal import Decimal
 from sqlalchemy import desc, func, text
+import random
 
 router = APIRouter()
 
@@ -81,6 +82,31 @@ def get_stock_data(company_name: str, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Empresa no encontrada")
 
     prices = db.query(StockPrice).filter(StockPrice.company_id == company.id).order_by(StockPrice.timestamp).all()
+
+    # Verificar si hay un precio para el día actual
+    today = datetime.datetime.utcnow().date()
+    has_today_price = False
+    last_price_value = 0
+    
+    if prices:
+        last_price = prices[-1]
+        last_price_value = last_price.price
+        has_today_price = last_price.timestamp.date() == today
+    
+    if not has_today_price and prices:
+        variation = (random.random() - 0.5) * 0.02  
+        new_price_value = last_price_value * (1 + variation)
+        
+        new_price = StockPrice(
+            company_id=company.id,
+            timestamp=datetime.datetime.utcnow(),
+            price=round(new_price_value, 2)
+        )
+        
+        db.add(new_price)
+        db.commit()
+        
+        prices.append(new_price)
 
     # Formatear los datos para que sean compatibles con Highcharts
     formatted_prices = [
@@ -395,6 +421,23 @@ async def get_user_portfolio(
             latest_price = db.query(StockPrice).filter(
                 StockPrice.company_id == company_id
             ).order_by(desc(StockPrice.timestamp)).first()
+            
+            if latest_price:
+                today = datetime.datetime.utcnow().date()
+                if latest_price.timestamp.date() != today:
+                    variation = (random.random() - 0.5) * 0.02 
+                    new_price_value = latest_price.price * (1 + variation)
+                    
+                    new_price = StockPrice(
+                        company_id=company_id,
+                        timestamp=datetime.datetime.utcnow(),
+                        price=round(new_price_value, 2)
+                    )
+                    
+                    db.add(new_price)
+                    db.commit()
+                    
+                    latest_price = new_price
             
             current_price = latest_price.price if latest_price else 0
             
