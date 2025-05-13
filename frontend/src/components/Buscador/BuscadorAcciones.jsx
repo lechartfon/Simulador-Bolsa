@@ -20,6 +20,7 @@ const BuscadorAcciones = ({ onSelectEmpresa }) => {
     const [resultados, setResultados] = useState([]);
     const [empresas, setEmpresas] = useState([]);
     const [loading, setLoading] = useState(false);
+    const [open, setOpen] = useState(false);
 
     useEffect(() => {
         const fetchEmpresas = async () => {
@@ -59,6 +60,7 @@ const BuscadorAcciones = ({ onSelectEmpresa }) => {
         console.log('Empresa seleccionada:', empresa);
         setBusqueda(empresa.name);
         setResultados([]);
+        setOpen(false);
         onSelectEmpresa(empresa);
     };
 
@@ -69,6 +71,9 @@ const BuscadorAcciones = ({ onSelectEmpresa }) => {
                 id="buscador-empresas"
                 options={empresas}
                 getOptionLabel={(option) => typeof option === 'string' ? option : `${option.name} (${option.symbol})`}
+                open={open}
+                onOpen={() => setOpen(true)}
+                onClose={() => setOpen(false)}
                 renderInput={(params) => (
                     <TextField
                         {...params}

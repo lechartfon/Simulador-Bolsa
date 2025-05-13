@@ -13,6 +13,8 @@ import {
   CircularProgress,
   Card,
   CardContent,
+  useMediaQuery,
+  useTheme,
 } from '@mui/material';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import TrendingDownIcon from '@mui/icons-material/TrendingDown';
@@ -26,6 +28,8 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const navigate = useNavigate();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   const getAuthAxios = () => {
     const token = localStorage.getItem('token');
@@ -139,24 +143,24 @@ const Dashboard = () => {
         </Box>
       ) : accountSummary && (
         <>
-          <Typography variant="h4" gutterBottom sx={{ mb: 3 }}>
+          <Typography variant="h4" gutterBottom sx={{ mb: 3, textAlign: { xs: 'center', md: 'left' } }}>
           Dashboard
           </Typography>
 
-          {/* Gráfica del valor de la cuenta - FIRST SECTION */}
+          {/* Gráfica del valor de la cuenta */}
           <Paper 
             elevation={3} 
             sx={{ 
               mb: 4, 
-              p: 3,
+              p: { xs: 2, md: 3 },
               borderRadius: 2,
               backgroundColor: 'white'
             }}
           >
-            <Typography variant="h5" gutterBottom sx={{ mb: 2 }}>
+            <Typography variant="h5" gutterBottom sx={{ mb: 2, textAlign: { xs: 'center', md: 'left' } }}>
               Evolución del valor de la cuenta
             </Typography>
-            <Box sx={{ width: '100%', height: '400px', overflow: 'hidden' }}>
+            <Box sx={{ width: '100%', height: { xs: '300px', md: '400px' }, overflow: 'hidden' }}>
               <AccountValueChart 
                 accountValue={accountSummary.valorTotal}
                 cashBalance={accountSummary.balance}
@@ -165,22 +169,22 @@ const Dashboard = () => {
             </Box>
           </Paper>
 
-          {/* Summary Cards - SECOND SECTION */}
+          {/* Información de la cuenta*/}
           <Paper 
             elevation={3} 
             sx={{ 
               mb: 4, 
-              p: 3,
+              p: { xs: 2, md: 3 },
               borderRadius: 2,
               backgroundColor: 'white'
             }}
           >
-            <Typography variant="h5" gutterBottom sx={{ mb: 2 }}>
+            <Typography variant="h5" gutterBottom sx={{ mb: 2, textAlign: { xs: 'center', md: 'left' } }}>
               Información de Cuenta
             </Typography>
-            <Grid container spacing={3}>
+            <Grid container spacing={3} justifyContent="center">
               {/* Valor Total de la Cuenta */}
-              <Grid item xs={12} md={6}>
+              <Grid item xs={12} sm={10} md={6} sx={{ display: 'flex', justifyContent: 'center' }}>
                 <Card 
                   elevation={2} 
                   sx={{ 
@@ -193,17 +197,17 @@ const Dashboard = () => {
                     },
                     display: 'flex',
                     flexDirection: 'column',
-                    width: 400
+                    width: { xs: '100%', sm: '90%', md: '400px' }
                   }}
                 >
                   <CardContent sx={{ p: 3, flexGrow: 1 }}>
-                    <Typography variant="h6" color="text.secondary" gutterBottom>
+                    <Typography variant="h6" color="text.secondary" gutterBottom sx={{ textAlign: { xs: 'center', md: 'left' } }}>
                       Valor Total de la Cuenta
                     </Typography>
-                    <Typography variant="h3" component="div">
+                    <Typography variant="h3" component="div" sx={{ textAlign: 'center' }}>
                       {formatCurrency(accountSummary.valorTotal)}
                     </Typography>
-                    <Box sx={{ display: 'flex', alignItems: 'center', mt: 1, ml: 10 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', mt: 1, justifyContent: 'center' }}>
                       {accountSummary.gananciasPerdidasTotales >= 0 ? (
                         <ArrowUpwardIcon color="success" />
                       ) : (
@@ -222,7 +226,7 @@ const Dashboard = () => {
               </Grid>
 
               {/* Dinero Disponible */}
-              <Grid item xs={12} md={6}>
+              <Grid item xs={12} sm={10} md={6} sx={{ display: 'flex', justifyContent: 'center' }}>
                 <Card 
                   elevation={2} 
                   sx={{ 
@@ -235,17 +239,17 @@ const Dashboard = () => {
                     },
                     display: 'flex',
                     flexDirection: 'column',
-                    width: 400
+                    width: { xs: '100%', sm: '90%', md: '400px' }
                   }}
                 >
                   <CardContent sx={{ p: 3, flexGrow: 1 }}>
-                    <Typography variant="h6" color="text.secondary" gutterBottom>
+                    <Typography variant="h6" color="text.secondary" gutterBottom sx={{ textAlign: { xs: 'center', md: 'left' } }}>
                       Dinero Disponible para Invertir
                     </Typography>
-                    <Typography variant="h3" component="div">
+                    <Typography variant="h3" component="div" sx={{ textAlign: 'center' }}>
                       {formatCurrency(accountSummary.balance)}
                     </Typography>
-                    <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                    <Typography variant="body2" color="text.secondary" sx={{ mt: 1, textAlign: 'center' }}>
                       Valor de Acciones: {formatCurrency(accountSummary.valorAcciones)}
                     </Typography>
                   </CardContent>
@@ -254,22 +258,22 @@ const Dashboard = () => {
             </Grid>
           </Paper>
 
-          {/* Performance Cards - THIRD SECTION */}
+          {/* Performance Cards */}
           <Paper 
             elevation={3} 
             sx={{ 
               mb: 4, 
-              p: 3,
+              p: { xs: 2, md: 3 },
               borderRadius: 2,
               backgroundColor: 'white'
             }}
           >
-            <Typography variant="h5" gutterBottom sx={{ mb: 2 }}>
+            <Typography variant="h5" gutterBottom sx={{ mb: 2, textAlign: { xs: 'center', md: 'left' } }}>
               Rendimiento de Inversiones
             </Typography>
-            <Grid container spacing={3}>
+            <Grid container spacing={3} justifyContent="center">
               {/* Mejor Rendimiento */}
-              <Grid item xs={12} md={6}>
+              <Grid item xs={12} sm={10} md={6} sx={{ display: 'flex', justifyContent: 'center' }}>
                 <Card 
                   elevation={2} 
                   sx={{ 
@@ -282,26 +286,26 @@ const Dashboard = () => {
                     },
                     display: 'flex',
                     flexDirection: 'column',
-                    width: 400
+                    width: { xs: '100%', sm: '90%', md: '400px' }
                   }}
                 >
                   <CardContent sx={{ p: 3, flexGrow: 1 }}>
-                    <Typography variant="h6" color="text.secondary" gutterBottom>
+                    <Typography variant="h6" color="text.secondary" gutterBottom sx={{ textAlign: { xs: 'center', md: 'left' } }}>
                       Mejor Rendimiento
                     </Typography>
                     {accountSummary.mejorAccion ? (
                       <>
-                        <Typography variant="h5" component="div">
+                        <Typography variant="h5" component="div" sx={{ textAlign: 'center' }}>
                           {accountSummary.mejorAccion.company_name}
                         </Typography>
                         <Box sx={{ mt: 2 }}>
-                          <Typography variant="body2" gutterBottom>
+                          <Typography variant="body2" gutterBottom sx={{ textAlign: 'center' }}>
                             Precio de compra: {formatCurrency(accountSummary.mejorAccion.avg_purchase_price)}
                           </Typography>
-                          <Typography variant="body2" gutterBottom>
+                          <Typography variant="body2" gutterBottom sx={{ textAlign: 'center' }}>
                             Precio actual: {formatCurrency(accountSummary.mejorAccion.current_price)}
                           </Typography>
-                          <Box sx={{ display: 'flex', alignItems: 'center', mt: 1, ml:10 }}>
+                          <Box sx={{ display: 'flex', alignItems: 'center', mt: 1, justifyContent: 'center' }}>
                             <TrendingUpIcon color="success" sx={{ mr: 1 }} />
                             <Typography variant="body1" color="success.main">
                               Ganancia: {formatCurrency((accountSummary.mejorAccion.current_price - accountSummary.mejorAccion.avg_purchase_price) * accountSummary.mejorAccion.shares_owned)}
@@ -310,14 +314,14 @@ const Dashboard = () => {
                         </Box>
                       </>
                     ) : (
-                      <Typography variant="body1">No hay acciones en cartera</Typography>
+                      <Typography variant="body1" sx={{ textAlign: 'center' }}>No hay acciones en cartera</Typography>
                     )}
                   </CardContent>
                 </Card>
               </Grid>
 
               {/* Peor Rendimiento */}
-              <Grid item xs={12} md={6}>
+              <Grid item xs={12} sm={10} md={6} sx={{ display: 'flex', justifyContent: 'center' }}>
                 <Card 
                   elevation={2} 
                   sx={{ 
@@ -330,26 +334,26 @@ const Dashboard = () => {
                     },
                     display: 'flex',
                     flexDirection: 'column',
-                    width: 400
+                    width: { xs: '100%', sm: '90%', md: '400px' }
                   }}
                 >
                   <CardContent sx={{ p: 3, flexGrow: 1 }}>
-                    <Typography variant="h6" color="text.secondary" gutterBottom>
+                    <Typography variant="h6" color="text.secondary" gutterBottom sx={{ textAlign: { xs: 'center', md: 'left' } }}>
                       Peor Rendimiento
                     </Typography>
                     {accountSummary.peorAccion ? (
                       <>
-                        <Typography variant="h5" component="div">
+                        <Typography variant="h5" component="div" sx={{ textAlign: 'center' }}>
                           {accountSummary.peorAccion.company_name}
                         </Typography>
                         <Box sx={{ mt: 2 }}>
-                          <Typography variant="body2" gutterBottom>
+                          <Typography variant="body2" gutterBottom sx={{ textAlign: 'center' }}>
                             Precio de compra: {formatCurrency(accountSummary.peorAccion.avg_purchase_price)}
                           </Typography>
-                          <Typography variant="body2" gutterBottom>
+                          <Typography variant="body2" gutterBottom sx={{ textAlign: 'center' }}>
                             Precio actual: {formatCurrency(accountSummary.peorAccion.current_price)}
                           </Typography>
-                          <Box sx={{ display: 'flex', alignItems: 'center', mt: 1, ml:10 }}>
+                          <Box sx={{ display: 'flex', alignItems: 'center', mt: 1, justifyContent: 'center' }}>
                             <TrendingDownIcon color="error" sx={{ mr: 1 }} />
                             <Typography variant="body1" color="error.main">
                               Pérdida: {formatCurrency((accountSummary.peorAccion.current_price - accountSummary.peorAccion.avg_purchase_price) * accountSummary.peorAccion.shares_owned)}
@@ -358,7 +362,7 @@ const Dashboard = () => {
                         </Box>
                       </>
                     ) : (
-                      <Typography variant="body1">No hay acciones en cartera</Typography>
+                      <Typography variant="body1" sx={{ textAlign: 'center' }}>No hay acciones en cartera</Typography>
                     )}
                   </CardContent>
                 </Card>
@@ -366,19 +370,26 @@ const Dashboard = () => {
             </Grid>
           </Paper>
 
-          {/* Portfolio Composition - FOURTH SECTION */}
+          {/* Portfolio Composition */}
           <Paper 
             elevation={3} 
             sx={{ 
-              p: 3,
+              p: { xs: 2, md: 3 },
               borderRadius: 2,
               backgroundColor: 'white'
             }}
           >
-            <Typography variant="h5" gutterBottom sx={{ mb: 2 }}>
+            <Typography variant="h5" gutterBottom sx={{ mb: 2, textAlign: { xs: 'center', md: 'left' } }}>
               Composición de Cartera
             </Typography>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap' }}>
+            <Box sx={{ 
+              display: 'flex', 
+              flexDirection: { xs: 'column', sm: 'row' },
+              justifyContent: 'space-between', 
+              alignItems: { xs: 'center', sm: 'center' }, 
+              flexWrap: 'wrap',
+              textAlign: { xs: 'center', sm: 'left' }
+            }}>
               <Box>
                 <Typography variant="body2" gutterBottom>
                   Número total de acciones: {portfolio.reduce((total, stock) => total + stock.shares_owned, 0)}
