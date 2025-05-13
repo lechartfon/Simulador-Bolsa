@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import '../App.css';
 import ClassroomList from '../components/Classroom/ClassroomList';
@@ -12,16 +12,9 @@ import {
   Box, 
   Paper, 
   Grid, 
-  AppBar, 
-  Toolbar, 
-  Button, 
   Alert,
   Snackbar
 } from '@mui/material';
-import ExitToAppIcon from '@mui/icons-material/ExitToApp';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import DashboardIcon from '@mui/icons-material/Dashboard';
-
 const Classroom = () => {
   const [classrooms, setClassrooms] = useState([]);
   const [selectedClassroom, setSelectedClassroom] = useState(null);
@@ -82,48 +75,12 @@ const Classroom = () => {
     setOpenSnackbar(true);
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    navigate('/login');
-  };
-
   const handleCloseSnackbar = () => {
     setOpenSnackbar(false);
   };
 
   return (
     <Box sx={{ flexGrow: 1 }}>
-      <AppBar position="static" color="primary">
-        <Toolbar>
-          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-            Simulador de Bolsa - Competición
-          </Typography>
-          <Button 
-            color="inherit" 
-            component={Link} 
-            to="/transacciones"
-            startIcon={<ArrowBackIcon />}
-          >
-            Volver a Transacciones
-          </Button>
-          <Button 
-            color="inherit" 
-            component={Link} 
-            to="/dashboard"
-            startIcon={<DashboardIcon />}
-          >
-            Dashboard
-          </Button>
-          <Button 
-            color="inherit" 
-            onClick={handleLogout}
-            startIcon={<ExitToAppIcon />}
-          >
-            Cerrar Sesión
-          </Button>
-        </Toolbar>
-      </AppBar>
-
       <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
         <Typography variant="h4" component="h1" sx={{ mb: 4 }}>
           Competición de Trading

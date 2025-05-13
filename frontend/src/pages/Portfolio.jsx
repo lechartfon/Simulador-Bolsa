@@ -1,15 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { 
   Container, 
   Typography, 
   Box, 
-  Paper, 
-  AppBar, 
-  Toolbar, 
+  Paper,  
   Button, 
-  Divider,
   Grid,
   Alert,
   CircularProgress,
@@ -28,17 +25,12 @@ import {
   DialogContentText,
   DialogTitle,
   Chip,
-  IconButton,
   InputAdornment
 } from '@mui/material';
-import ExitToAppIcon from '@mui/icons-material/ExitToApp';
-import ClassIcon from '@mui/icons-material/Class';
-import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
 import ArrowDropUpIcon from '@mui/icons-material/ArrowDropUp';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import SellIcon from '@mui/icons-material/Sell';
 import HistoryIcon from '@mui/icons-material/History';
-import DashboardIcon from '@mui/icons-material/Dashboard';
 
 // Componente TabPanel para las pestañas
 function TabPanel(props) {
@@ -122,12 +114,12 @@ const PortfolioPage = () => {
       const response = await authAxios.get('/portfolio');
       setPortfolio(response.data);
     } catch (error) {
-      console.error("Error al cargar el portafolio:", error);
+      console.error("Error al cargar el portfolio:", error);
       if (error.response?.status === 401) {
         localStorage.removeItem('token');
         navigate('/login');
       } else {
-        setError('Error al cargar el portafolio. Por favor, recarga la página.');
+        setError('Error al cargar el portfolio. Por favor, recarga la página.');
       }
     }
   };
@@ -181,11 +173,6 @@ const PortfolioPage = () => {
 
   const handleTabChange = (event, newValue) => {
     setTabValue(newValue);
-  };
-
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    navigate('/login');
   };
 
   const formatFecha = (fechaStr) => {
@@ -242,55 +229,10 @@ const PortfolioPage = () => {
 
   return (
     <Box sx={{ flexGrow: 1 }}>
-      <AppBar position="static" color="primary">
-        <Toolbar>
-          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-            Simulador de Bolsa
-          </Typography>
-          {dineroDisponible !== null && (
-            <Box sx={{ display: 'flex', alignItems: 'center', mr: 2 }}>
-              <AccountBalanceWalletIcon sx={{ mr: 1 }} />
-              <Typography variant="body1" fontWeight="medium">
-                Saldo: {dineroDisponible.toFixed(2)}€
-              </Typography>
-            </Box>
-          )}
-          <Button 
-            color="inherit" 
-            component={Link} 
-            to="/Transacciones"
-          >
-            Comprar
-          </Button>
-          <Button 
-            color="inherit" 
-            component={Link} 
-            to="/classroom"
-            startIcon={<ClassIcon />}
-          >
-            Ver Competición
-          </Button>
-          <Button 
-            color="inherit" 
-            component={Link} 
-            to="/dashboard" 
-            startIcon={<DashboardIcon />}
-          >
-            Dashboard
-          </Button>
-          <Button 
-            color="inherit" 
-            onClick={handleLogout}
-            startIcon={<ExitToAppIcon />}
-          >
-            Cerrar Sesión
-          </Button>
-        </Toolbar>
-      </AppBar>
 
       <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
         <Typography variant="h4" component="h1" gutterBottom>
-          Mi Portafolio
+          Mi Portfolio
         </Typography>
         
         {mensaje && (
@@ -349,7 +291,7 @@ const PortfolioPage = () => {
                   }}
                 >
                   <Typography variant="h6" color="text.secondary" align="center">
-                    No tienes acciones en tu portafolio. Dirígete a la sección de compras para adquirir acciones.
+                    No tienes acciones en tu portfolio. Dirígete a la sección de compras para adquirir acciones.
                   </Typography>
                 </Paper>
               ) : (

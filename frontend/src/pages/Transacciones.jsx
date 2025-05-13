@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import StockChart from './../components/Charts/StockChart';
 import CompraAcciones from './../components/ComprarAcciones/CompraAcciones';
@@ -9,18 +9,10 @@ import {
   Typography, 
   Box, 
   Paper, 
-  AppBar, 
-  Toolbar, 
-  Button, 
-  Divider,
   Grid,
   Alert,
   CircularProgress
 } from '@mui/material';
-import ExitToAppIcon from '@mui/icons-material/ExitToApp';
-import ClassIcon from '@mui/icons-material/Class';
-import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
-import DashboardIcon from '@mui/icons-material/Dashboard';
 
 const TransaccionesPage = () => {
   const [empresaSeleccionada, setEmpresaSeleccionada] = useState(null);
@@ -100,59 +92,9 @@ const TransaccionesPage = () => {
     await cargarSaldo();
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    navigate('/login');
-  };
 
   return (
     <Box sx={{ flexGrow: 1 }}>
-      <AppBar position="static" color="primary">
-        <Toolbar>
-          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-            Simulador de Bolsa
-          </Typography>
-          {dineroDisponible !== null && (
-            <Box sx={{ display: 'flex', alignItems: 'center', mr: 2 }}>
-              <AccountBalanceWalletIcon sx={{ mr: 1 }} />
-              <Typography variant="body1" fontWeight="medium">
-                Saldo: {dineroDisponible.toFixed(2)}€
-              </Typography>
-            </Box>
-          )}
-          <Button 
-            color="inherit" 
-            component={Link} 
-            to="/portfolio"
-          >
-            Mi Portafolio
-          </Button>
-          <Button 
-            color="inherit" 
-            component={Link} 
-            to="/classroom"
-            startIcon={<ClassIcon />}
-          >
-            Ver Competición
-          </Button>
-          <Button 
-            color="inherit" 
-            component={Link} 
-            to="/dashboard"
-            startIcon={<DashboardIcon />}
-          >
-            Dashboard
-          </Button>
-          <Button 
-            color="inherit" 
-            onClick={handleLogout}
-            startIcon={<ExitToAppIcon />}
-          >
-            Cerrar Sesión
-          </Button>
-        </Toolbar>
-      </AppBar>
-
       <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
         <Typography variant="h4" component="h1" gutterBottom>
           Transacciones

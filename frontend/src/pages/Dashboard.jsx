@@ -7,25 +7,16 @@ import {
   Typography, 
   Box, 
   Paper, 
-  AppBar, 
-  Toolbar, 
   Button, 
   Grid,
   Alert,
   CircularProgress,
   Card,
   CardContent,
-  Divider,
-  IconButton
 } from '@mui/material';
-import ExitToAppIcon from '@mui/icons-material/ExitToApp';
-import ClassIcon from '@mui/icons-material/Class';
-import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
-import HistoryIcon from '@mui/icons-material/History';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import TrendingDownIcon from '@mui/icons-material/TrendingDown';
 import ShowChartIcon from '@mui/icons-material/ShowChart';
-import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 
@@ -130,10 +121,6 @@ const Dashboard = () => {
     cargarDatos();
   }, [navigate]);
 
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    navigate('/login');
-  };
 
   const formatCurrency = (value) => {
     return new Intl.NumberFormat('es-ES', {
@@ -144,40 +131,7 @@ const Dashboard = () => {
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-      <AppBar position="static">
-        <Toolbar>
-          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-            Panel de Control
-          </Typography>
-          <Button 
-            color="inherit" 
-            component={Link} 
-            to="/portfolio" 
-            startIcon={<ShowChartIcon />}
-          >
-            Portfolio
-          </Button>
-          <Button 
-            color="inherit" 
-            component={Link} 
-            to="/Transacciones" 
-            startIcon={<AccountBalanceWalletIcon />}
-          >
-            Transacciones
-          </Button>
-          <Button 
-            color="inherit" 
-            component={Link} 
-            to="/classroom" 
-            startIcon={<ClassIcon />}
-          >
-            Classroom
-          </Button>
-          <IconButton color="inherit" onClick={handleLogout}>
-            <ExitToAppIcon />
-          </IconButton>
-        </Toolbar>
-      </AppBar>
+      
 
       <Container maxWidth="lg" sx={{ mt: 4, mb: 4, flexGrow: 1 }}>
         {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
@@ -350,7 +304,7 @@ const Dashboard = () => {
                     startIcon={<ShowChartIcon />}
                     sx={{ mt: 2 }}
                   >
-                    Ver Portafolio Completo
+                    Ver Portfolio Completo
                   </Button>
                 </Paper>
               </Grid>
