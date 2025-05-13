@@ -130,61 +130,80 @@ const Dashboard = () => {
   };
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+    <Container maxWidth="xl" sx={{ py: 3 }}>
+      {error && <Alert severity="error" sx={{ mb: 3 }}>{error}</Alert>}
       
+      {loading ? (
+        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '70vh' }}>
+          <CircularProgress size={60} />
+        </Box>
+      ) : accountSummary && (
+        <>
+          <Typography variant="h4" gutterBottom sx={{ mb: 3 }}>
+          Dashboard
+          </Typography>
 
-      <Container maxWidth="lg" sx={{ mt: 4, mb: 4, flexGrow: 1 }}>
-        {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
-        
-        {loading ? (
-          <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh' }}>
-            <CircularProgress />
-          </Box>
-        ) : accountSummary && (
-          <>
-            <Box sx={{ mb: 4 }}>
-              <Typography variant="h4" gutterBottom>
-                Resumen de tu cuenta
-              </Typography>
+          {/* Gráfica del valor de la cuenta - FIRST SECTION */}
+          <Paper 
+            elevation={3} 
+            sx={{ 
+              mb: 4, 
+              p: 3,
+              borderRadius: 2,
+              backgroundColor: 'white'
+            }}
+          >
+            <Typography variant="h5" gutterBottom sx={{ mb: 2 }}>
+              Evolución del valor de la cuenta
+            </Typography>
+            <Box sx={{ width: '100%', height: '400px', overflow: 'hidden' }}>
+              <AccountValueChart 
+                accountValue={accountSummary.valorTotal}
+                cashBalance={accountSummary.balance}
+                stocksValue={accountSummary.valorAcciones}
+              />
             </Box>
+          </Paper>
 
-            {/* Gráfica del valor de la cuenta */}
-            <Grid container spacing={3}>
-              <Grid item xs={12}>
-                <Card 
-                  sx={{ 
-                    mb: 4,
-                    boxShadow: (theme) => `0 4px 12px ${theme.palette.primary.main}15`
-                  }}
-                >
-                  <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
-                    <Typography variant="h6" color="text.secondary" sx={{ mb: 2 }}>
-                      Evolución del valor de la cuenta
-                    </Typography>
-                    <Box sx={{ width: '100%', overflow: 'hidden' }}>
-                      <AccountValueChart 
-                        accountValue={accountSummary.valorTotal}
-                        cashBalance={accountSummary.balance}
-                        stocksValue={accountSummary.valorAcciones}
-                      />
-                    </Box>
-                  </CardContent>
-                </Card>
-              </Grid>
-            </Grid>
-
+          {/* Summary Cards - SECOND SECTION */}
+          <Paper 
+            elevation={3} 
+            sx={{ 
+              mb: 4, 
+              p: 3,
+              borderRadius: 2,
+              backgroundColor: 'white'
+            }}
+          >
+            <Typography variant="h5" gutterBottom sx={{ mb: 2 }}>
+              Información de Cuenta
+            </Typography>
             <Grid container spacing={3}>
               {/* Valor Total de la Cuenta */}
               <Grid item xs={12} md={6}>
-                <Card sx={{ height: '100%' }}>
-                  <CardContent>
+                <Card 
+                  elevation={2} 
+                  sx={{ 
+                    height: '100%',
+                    borderRadius: 2,
+                    transition: 'transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out',
+                    '&:hover': {
+                      transform: 'translateY(-5px)',
+                      boxShadow: '0 8px 16px rgba(0,0,0,0.1)'
+                    },
+                    display: 'flex',
+                    flexDirection: 'column',
+                    width: 400
+                  }}
+                >
+                  <CardContent sx={{ p: 3, flexGrow: 1 }}>
                     <Typography variant="h6" color="text.secondary" gutterBottom>
                       Valor Total de la Cuenta
                     </Typography>
                     <Typography variant="h3" component="div">
                       {formatCurrency(accountSummary.valorTotal)}
                     </Typography>
-                    <Box sx={{ display: 'flex', alignItems: 'center', mt: 1 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', mt: 1, ml: 10 }}>
                       {accountSummary.gananciasPerdidasTotales >= 0 ? (
                         <ArrowUpwardIcon color="success" />
                       ) : (
@@ -204,8 +223,22 @@ const Dashboard = () => {
 
               {/* Dinero Disponible */}
               <Grid item xs={12} md={6}>
-                <Card sx={{ height: '100%' }}>
-                  <CardContent>
+                <Card 
+                  elevation={2} 
+                  sx={{ 
+                    height: '100%',
+                    borderRadius: 2,
+                    transition: 'transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out',
+                    '&:hover': {
+                      transform: 'translateY(-5px)',
+                      boxShadow: '0 8px 16px rgba(0,0,0,0.1)'
+                    },
+                    display: 'flex',
+                    flexDirection: 'column',
+                    width: 400
+                  }}
+                >
+                  <CardContent sx={{ p: 3, flexGrow: 1 }}>
                     <Typography variant="h6" color="text.secondary" gutterBottom>
                       Dinero Disponible para Invertir
                     </Typography>
@@ -218,11 +251,41 @@ const Dashboard = () => {
                   </CardContent>
                 </Card>
               </Grid>
+            </Grid>
+          </Paper>
 
+          {/* Performance Cards - THIRD SECTION */}
+          <Paper 
+            elevation={3} 
+            sx={{ 
+              mb: 4, 
+              p: 3,
+              borderRadius: 2,
+              backgroundColor: 'white'
+            }}
+          >
+            <Typography variant="h5" gutterBottom sx={{ mb: 2 }}>
+              Rendimiento de Inversiones
+            </Typography>
+            <Grid container spacing={3}>
               {/* Mejor Rendimiento */}
               <Grid item xs={12} md={6}>
-                <Card sx={{ height: '100%' }}>
-                  <CardContent>
+                <Card 
+                  elevation={2} 
+                  sx={{ 
+                    height: '100%',
+                    borderRadius: 2,
+                    transition: 'transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out',
+                    '&:hover': {
+                      transform: 'translateY(-5px)',
+                      boxShadow: '0 8px 16px rgba(0,0,0,0.1)'
+                    },
+                    display: 'flex',
+                    flexDirection: 'column',
+                    width: 400
+                  }}
+                >
+                  <CardContent sx={{ p: 3, flexGrow: 1 }}>
                     <Typography variant="h6" color="text.secondary" gutterBottom>
                       Mejor Rendimiento
                     </Typography>
@@ -238,7 +301,7 @@ const Dashboard = () => {
                           <Typography variant="body2" gutterBottom>
                             Precio actual: {formatCurrency(accountSummary.mejorAccion.current_price)}
                           </Typography>
-                          <Box sx={{ display: 'flex', alignItems: 'center', mt: 1 }}>
+                          <Box sx={{ display: 'flex', alignItems: 'center', mt: 1, ml:10 }}>
                             <TrendingUpIcon color="success" sx={{ mr: 1 }} />
                             <Typography variant="body1" color="success.main">
                               Ganancia: {formatCurrency((accountSummary.mejorAccion.current_price - accountSummary.mejorAccion.avg_purchase_price) * accountSummary.mejorAccion.shares_owned)}
@@ -255,8 +318,22 @@ const Dashboard = () => {
 
               {/* Peor Rendimiento */}
               <Grid item xs={12} md={6}>
-                <Card sx={{ height: '100%' }}>
-                  <CardContent>
+                <Card 
+                  elevation={2} 
+                  sx={{ 
+                    height: '100%',
+                    borderRadius: 2,
+                    transition: 'transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out',
+                    '&:hover': {
+                      transform: 'translateY(-5px)',
+                      boxShadow: '0 8px 16px rgba(0,0,0,0.1)'
+                    },
+                    display: 'flex',
+                    flexDirection: 'column',
+                    width: 400
+                  }}
+                >
+                  <CardContent sx={{ p: 3, flexGrow: 1 }}>
                     <Typography variant="h6" color="text.secondary" gutterBottom>
                       Peor Rendimiento
                     </Typography>
@@ -272,7 +349,7 @@ const Dashboard = () => {
                           <Typography variant="body2" gutterBottom>
                             Precio actual: {formatCurrency(accountSummary.peorAccion.current_price)}
                           </Typography>
-                          <Box sx={{ display: 'flex', alignItems: 'center', mt: 1 }}>
+                          <Box sx={{ display: 'flex', alignItems: 'center', mt: 1, ml:10 }}>
                             <TrendingDownIcon color="error" sx={{ mr: 1 }} />
                             <Typography variant="body1" color="error.main">
                               Pérdida: {formatCurrency((accountSummary.peorAccion.current_price - accountSummary.peorAccion.avg_purchase_price) * accountSummary.peorAccion.shares_owned)}
@@ -286,33 +363,54 @@ const Dashboard = () => {
                   </CardContent>
                 </Card>
               </Grid>
-
-              {/* Resumen de Cartera */}
-              <Grid item xs={12}>
-                <Paper sx={{ p: 3 }}>
-                  <Typography variant="h6" gutterBottom>Composición de Cartera</Typography>
-                  <Typography variant="body2" gutterBottom>
-                    Número total de acciones: {portfolio.reduce((total, stock) => total + stock.shares_owned, 0)}
-                  </Typography>
-                  <Typography variant="body2" gutterBottom>
-                    Número de empresas diferentes: {portfolio.length}
-                  </Typography>
-                  <Button 
-                    variant="contained" 
-                    component={Link} 
-                    to="/portfolio" 
-                    startIcon={<ShowChartIcon />}
-                    sx={{ mt: 2 }}
-                  >
-                    Ver Portfolio Completo
-                  </Button>
-                </Paper>
-              </Grid>
             </Grid>
-          </>
-        )}
-      </Container>
-    </Box>
+          </Paper>
+
+          {/* Portfolio Composition - FOURTH SECTION */}
+          <Paper 
+            elevation={3} 
+            sx={{ 
+              p: 3,
+              borderRadius: 2,
+              backgroundColor: 'white'
+            }}
+          >
+            <Typography variant="h5" gutterBottom sx={{ mb: 2 }}>
+              Composición de Cartera
+            </Typography>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap' }}>
+              <Box>
+                <Typography variant="body2" gutterBottom>
+                  Número total de acciones: {portfolio.reduce((total, stock) => total + stock.shares_owned, 0)}
+                </Typography>
+                <Typography variant="body2" gutterBottom>
+                  Número de empresas diferentes: {portfolio.length}
+                </Typography>
+              </Box>
+              <Button 
+                variant="contained" 
+                component={Link} 
+                to="/portfolio" 
+                startIcon={<ShowChartIcon />}
+                size="large"
+                sx={{ 
+                  mt: { xs: 2, sm: 0 },
+                  py: 1.5,
+                  px: 3,
+                  borderRadius: 2,
+                  boxShadow: '0 4px 10px rgba(0,0,0,0.1)',
+                  '&:hover': {
+                    boxShadow: '0 6px 12px rgba(0,0,0,0.2)',
+                  }
+                }}
+              >
+                Ver Portfolio Completo
+              </Button>
+            </Box>
+          </Paper>
+        </>
+      )}
+    </Container>
   );
 };
 
