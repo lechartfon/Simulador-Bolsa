@@ -201,7 +201,7 @@ const LandingPage = () => {
       </Box>
 
       {/* Sección Características Principales */}
-      <Container sx={{ py: 8 }} maxWidth="lg">
+      <Box sx={{ py: 8 }} maxWidth="lg">
         <Typography variant="h3" component="h2" align="center" gutterBottom>
           Características Principales
         </Typography>
@@ -216,21 +216,29 @@ const LandingPage = () => {
           segura
         </Typography>
 
-        <Grid container spacing={4} alignItems="stretch">
+        <Grid container spacing={4} alignItems="stretch" justifyContent="center">
           {features.map((feature, index) => (
             <Grid
               item
               key={index}
               xs={12}
               sm={6}
-              md={4}
-              sx={{ display: "flex" }}
+              sx={{ 
+                display: "flex", 
+                justifyContent: "center",
+                [theme.breakpoints.down("sm")]: {
+                  display: "flex",
+                  justifyContent: "center",
+                }
+              }}
             >
               <Card
                 sx={{
                   display: "flex",
                   flexDirection: "column",
                   width: "100%",
+                  minWidth: { xs: "90%", sm: 584 },
+                  maxWidth: { xs: "90%", sm: 584 },
                   transition: "transform 0.3s, box-shadow 0.3s",
                   "&:hover": {
                     transform: "translateY(-8px)",
@@ -276,7 +284,7 @@ const LandingPage = () => {
             </Grid>
           ))}
         </Grid>
-      </Container>
+      </Box>
 
       {/* Sección Cómo Funciona */}
       <Box sx={{ bgcolor: "background.paper", py: 8 }}>
@@ -294,17 +302,33 @@ const LandingPage = () => {
             Tres sencillos pasos para comenzar tu camino en las inversiones
           </Typography>
 
-          <Grid container spacing={4} alignItems="stretch">
-            <Grid item xs={12} md={4} sx={{ display: "flex" }}>
+          <Grid container spacing={4} alignItems="stretch" justifyContent="center">
+            <Grid 
+              item 
+              xs={12} 
+              sm={6} 
+              md={4} 
+              sx={{ 
+                display: "flex", 
+                justifyContent: "center",
+                [theme.breakpoints.down("sm")]: {
+                  display: "flex",
+                  justifyContent: "center",
+                }
+              }}
+            >
               <Paper
                 elevation={3}
                 sx={{
                   p: 4,
                   textAlign: "center",
                   width: "100%",
+                  minWidth: { xs: "90%", sm: 300 },
+                  maxWidth: { xs: "90%", sm: 300 },
                   display: "flex",
                   flexDirection: "column",
                   justifyContent: "flex-start",
+                  height: "100%"
                 }}
               >
                 <Avatar
@@ -327,16 +351,32 @@ const LandingPage = () => {
                 </Typography>
               </Paper>
             </Grid>
-            <Grid item xs={12} md={4} sx={{ display: "flex" }}>
+            <Grid 
+              item 
+              xs={12} 
+              sm={6} 
+              md={4} 
+              sx={{ 
+                display: "flex", 
+                justifyContent: "center",
+                [theme.breakpoints.down("sm")]: {
+                  display: "flex",
+                  justifyContent: "center",
+                }
+              }}
+            >
               <Paper
                 elevation={3}
                 sx={{
                   p: 4,
                   textAlign: "center",
                   width: "100%",
+                  minWidth: { xs: "90%", sm: 300 },
+                  maxWidth: { xs: "90%", sm: 300 },
                   display: "flex",
                   flexDirection: "column",
                   justifyContent: "flex-start",
+                  height: "100%"
                 }}
               >
                 <Avatar
@@ -359,16 +399,32 @@ const LandingPage = () => {
                 </Typography>
               </Paper>
             </Grid>
-            <Grid item xs={12} md={4} sx={{ display: "flex" }}>
+            <Grid 
+              item 
+              xs={12} 
+              sm={6} 
+              md={4} 
+              sx={{ 
+                display: "flex", 
+                justifyContent: "center",
+                [theme.breakpoints.down("sm")]: {
+                  display: "flex",
+                  justifyContent: "center",
+                }
+              }}
+            >
               <Paper
                 elevation={3}
                 sx={{
                   p: 4,
                   textAlign: "center",
                   width: "100%",
+                  minWidth: { xs: "90%", sm: 300 },
+                  maxWidth: { xs: "90%", sm: 300 },
                   display: "flex",
                   flexDirection: "column",
                   justifyContent: "flex-start",
+                  height: "100%"
                 }}
               >
                 <Avatar
