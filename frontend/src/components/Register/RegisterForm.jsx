@@ -1,7 +1,21 @@
 import React, { useState } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
-import "./RegisterForm.css";
+import { useNavigate, Link } from "react-router-dom";
+import {
+  Box,
+  Container,
+  Typography,
+  TextField,
+  Button,
+  Paper,
+  Avatar,
+  Grid,
+  Alert,
+  Divider,
+  LinearProgress,
+  useTheme
+} from "@mui/material";
+import PersonAddIcon from "@mui/icons-material/PersonAdd";
 
 const RegisterForm = () => {
   const [formData, setFormData] = useState({
@@ -16,6 +30,7 @@ const RegisterForm = () => {
   const [confirmMessage, setConfirmMessage] = useState("");
   const [submitError, setSubmitError] = useState("");
   const navigate = useNavigate();
+  const theme = useTheme();
 
   const regex = {
     length: /^.{8,}$/,
@@ -76,10 +91,10 @@ const RegisterForm = () => {
   };
 
   const getBarColor = () => {
-    if (passwordStrength === 100) return "green";
-    if (passwordStrength >= 75) return "yellow";
-    if (passwordStrength >= 50) return "orange";
-    return "red";
+    if (passwordStrength === 100) return theme.palette.success.main;
+    if (passwordStrength >= 75) return theme.palette.warning.main;
+    if (passwordStrength >= 50) return theme.palette.warning.light;
+    return theme.palette.error.main;
   };
 
   const handleSubmit = async (e) => {
@@ -110,114 +125,189 @@ const RegisterForm = () => {
       navigate("/login");
     } catch (error) {
       console.error("Error al registrarse:", error.response);
+      setSubmitError("Error al registrarse. Por favor, intenta nuevamente.");
     }
   };
 
   return (
-    <div className="page-container">
-      <div className="image-section"></div>
-      <div className="form-section">
-        <div className="card">
-          <div className="card-header">
-            <div className="text-header">Register</div>
-          </div>
-          <div className="card-body">
-            <form onSubmit={handleSubmit}>
-              <div className="form-group">
-                <label htmlFor="username">Username:</label>
-                <input
-                  required
-                  type="text"
-                  id="username"
-                  name="username"
-                  value={formData.username}
-                  onChange={handleChange}
-                />
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="email">Email:</label>
-                <input
-                  required
-                  type="email"
-                  id="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                />
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="password">Password:</label>
-                <input
-                  required
-                  type="password"
-                  id="password"
-                  name="password"
-                  value={formData.password}
-                  onChange={handleChange}
-                />
-                <div
-                  id="mensajeContrasena"
-                  style={{ color: passwordStrength === 100 ? "green" : "red" }}
-                >
-                  {passwordMessage}
-                </div>
-                <div
-                  id="barraSeguridad"
-                  style={{
-                    marginTop: "5px",
-                    height: "8px",
-                    width: "100%",
-                    backgroundColor: "#ccc",
-                    visibility: "visible",
-                  }}
-                >
-                  <div
-                    id="barra"
-                    style={{
-                      width: `${passwordStrength}%`,
-                      height: "100%",
-                      backgroundColor: getBarColor(),
-                      transition: "width 0.3s",
-                    }}
-                  ></div>
-                </div>
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="confirmPassword">Confirm Password:</label>
-                <input
-                  required
-                  type="password"
-                  id="confirmPassword"
-                  name="confirmPassword"
-                  value={formData.confirmPassword}
-                  onChange={handleChange}
-                />
-                <div
-                  id="mensajeContrasena2"
-                  style={{
-                    color:
-                      formData.password === formData.confirmPassword
-                        ? "green"
-                        : "red",
-                  }}
-                >
-                  {confirmMessage}
-                </div>
-              </div>
-
-              {submitError && <p style={{ color: "red" }}>{submitError}</p>}
-
-              <button type="submit" className="btn">
-                Register
-              </button>
-            </form>
-          </div>
-        </div>
-      </div>
-    </div>
+    <Box
+      sx={{
+        display: 'flex',
+        flexDirection: 'row',
+        height: '100vh',
+        width: '100vw',
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        margin: 0,
+        padding: 0,
+        overflow: 'hidden'
+      }}
+    >
+      {/* Left 2/3 image section */}
+      <Box
+        sx={{
+          flex: '2',
+          backgroundImage: `url('/Fondo-Inversion.png')`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          display: { xs: 'none', md: 'block' },
+          margin: 0,
+          padding: 0
+        }}
+      />
+      
+      {/* Right 1/3 register form section */}
+      <Box
+        sx={{
+          flex: '1',
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'center',
+          bgcolor: 'background.default',
+          p: { xs: 2, sm: 4 },
+          overflowY: 'auto',
+          boxShadow: '-5px 0 15px rgba(0,0,0,0.1)'
+        }}
+      >
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            maxWidth: '450px',
+            mx: 'auto',
+            width: '100%'
+          }}
+        >
+          <Avatar sx={{ m: 1, bgcolor: theme.palette.secondary.main, width: 56, height: 56 }}>
+            <PersonAddIcon fontSize="large" />
+          </Avatar>
+          <Typography component="h1" variant="h4" fontWeight="500" mb={4}>
+            Crear Cuenta
+          </Typography>
+          
+          <Box component="form" onSubmit={handleSubmit} sx={{ width: '100%' }}>
+            <TextField
+              margin="normal"
+              required
+              fullWidth
+              id="username"
+              label="Nombre de usuario"
+              name="username"
+              autoComplete="username"
+              autoFocus
+              value={formData.username}
+              onChange={handleChange}
+              variant="outlined"
+              size="large"
+            />
+            
+            <TextField
+              margin="normal"
+              required
+              fullWidth
+              id="email"
+              label="Correo electrónico"
+              name="email"
+              autoComplete="email"
+              value={formData.email}
+              onChange={handleChange}
+              variant="outlined"
+              size="large"
+            />
+            
+            <TextField
+              margin="normal"
+              required
+              fullWidth
+              name="password"
+              label="Contraseña"
+              type="password"
+              id="password"
+              value={formData.password}
+              onChange={handleChange}
+              variant="outlined"
+              size="large"
+            />
+            
+            <Box sx={{ mt: 2, mb: 2 }}>
+              <LinearProgress 
+                variant="determinate" 
+                value={passwordStrength} 
+                sx={{ 
+                  height: 8, 
+                  borderRadius: 5,
+                  bgcolor: theme.palette.grey[200],
+                  '& .MuiLinearProgress-bar': {
+                    bgcolor: getBarColor(),
+                  }
+                }} 
+              />
+              <Typography 
+                variant="caption" 
+                color={passwordStrength === 100 ? "success.main" : "error"}
+                sx={{ mt: 1, display: 'block' }}
+              >
+                {passwordMessage}
+              </Typography>
+            </Box>
+            
+            <TextField
+              margin="normal"
+              required
+              fullWidth
+              name="confirmPassword"
+              label="Confirmar Contraseña"
+              type="password"
+              id="confirmPassword"
+              value={formData.confirmPassword}
+              onChange={handleChange}
+              variant="outlined"
+              size="large"
+            />
+            
+            <Typography 
+              variant="caption" 
+              color={formData.password === formData.confirmPassword && formData.confirmPassword !== "" 
+                ? "success.main" 
+                : "error"}
+              sx={{ mt: 1, display: 'block', mb: 2 }}
+            >
+              {confirmMessage}
+            </Typography>
+            
+            {submitError && <Alert severity="error" sx={{ mt: 1, mb: 2 }}>{submitError}</Alert>}
+            
+            <Button
+              type="submit"
+              fullWidth
+              variant="contained"
+              color="secondary"
+              sx={{ mt: 3, mb: 3, py: 1.5, borderRadius: 2, fontSize: '1rem' }}
+            >
+              Registrarse
+            </Button>
+            
+            <Divider sx={{ my: 3 }}>
+              <Typography variant="body2" color="text.secondary">
+                o
+              </Typography>
+            </Divider>
+            
+            <Button
+              component={Link}
+              to="/login"
+              fullWidth
+              variant="outlined"
+              sx={{ borderRadius: 2, py: 1.2 }}
+            >
+              ¿Ya tienes cuenta? Iniciar sesión
+            </Button>
+          </Box>
+        </Box>
+      </Box>
+    </Box>
   );
 };
 
