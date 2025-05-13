@@ -6,6 +6,7 @@ import Classroom from './pages/Classroom';
 import Portfolio from './pages/Portfolio';
 import Dashboard from './pages/Dashboard';
 import News from './pages/News';
+import LandingPage from './pages/LandingPage';
 
 function App() {
   return (
@@ -18,7 +19,7 @@ function App() {
         <Route path="/portfolio" element={<Portfolio />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/news" element={<News />} />
-        <Route path="/" element={<Dashboard />} />
+        <Route path="/" element={<LandingPage />} />
       </Routes>
     </Router>
   );
