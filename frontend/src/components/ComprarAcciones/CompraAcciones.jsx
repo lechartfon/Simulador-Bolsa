@@ -243,7 +243,14 @@ const CompraAcciones = ({ empresa, chartRef, dineroDisponible, onCompraExitosa }
       const response = await authAxios.post('/comprar', data);
 
       if (response.status === 200) {
-        onCompraExitosa(cantidad, Math.round(precioActual * cantidad * 100) / 100);
+        const total = Math.round(precioActual * cantidad * 100) / 100;
+        
+        // Update the header wallet balance
+        if (window.updateHeaderWallet) {
+          window.updateHeaderWallet();
+        }
+        
+        onCompraExitosa(cantidad, total);
         setMensaje(`Compra realizada: ${cantidad} x ${empresa.name} a ${precioFormateado}€`);
         setMensajeType('success');
       } else {

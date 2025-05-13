@@ -29,6 +29,13 @@ import axios from 'axios';
 // Drawer width
 const drawerWidth = 240;
 
+// Create a global reference to update the wallet balance
+window.updateHeaderWallet = () => {
+  if (window.fetchWalletBalance) {
+    window.fetchWalletBalance();
+  }
+};
+
 const Layout = ({ children }) => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -58,28 +65,34 @@ const Layout = ({ children }) => {
   }, [location.pathname]);
   
   // Fetch wallet balance
-  useEffect(() => {
-    const fetchWalletBalance = async () => {
-      try {
-        const token = localStorage.getItem('token');
-        if (!token) return;
-        
-        const response = await axios.get('http://localhost:8000/wallet', {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
-        });
-        
-        if (response.data && typeof response.data.balance === 'number') {
-          setWalletBalance(response.data.balance);
+  const fetchWalletBalance = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) return;
+      
+      const response = await axios.get('http://localhost:8000/wallet', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
         }
-      } catch (error) {
-        console.error('Error fetching wallet balance:', error);
+      });
+      
+      if (response.data && typeof response.data.balance === 'number') {
+        setWalletBalance(response.data.balance);
       }
-    };
-    
+    } catch (error) {
+      console.error('Error fetching wallet balance:', error);
+    }
+  };
+
+  // Make the fetch function available globally
+  useEffect(() => {
+    window.fetchWalletBalance = fetchWalletBalance;
     fetchWalletBalance();
+    
+    return () => {
+      window.fetchWalletBalance = undefined;
+    };
   }, []);
 
   const handleDrawerToggle = () => {
@@ -193,7 +206,7 @@ const Layout = ({ children }) => {
           {walletBalance !== null && (
             <Chip
               icon={<AccountBalanceWalletIcon />}
-              label={`Saldo: ${walletBalance} €`}
+              label={`Saldo: ${walletBalance.toFixed(2)} €`}
               variant="filled"
               sx={{ 
                 color: 'white', 
