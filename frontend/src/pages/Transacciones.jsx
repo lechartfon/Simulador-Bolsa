@@ -121,33 +121,29 @@ const TransaccionesPage = () => {
             </Paper>
 
             {empresaSeleccionada && (
-              <Grid container spacing={3}>
-                <Grid item xs={12} md={8}>
-                  <Paper 
-                    elevation={3} 
-                    sx={{ p: 2, mb: 3, height: '100%' }}
-                  >
-                    <Typography variant="h6" gutterBottom>
-                      Gráfica: {empresaSeleccionada.name}
-                    </Typography>
-                    <StockChart company={empresaSeleccionada.name} refExterno={chartRef} />
-                  </Paper>
-                </Grid>
+              <>
+                <Paper 
+                  elevation={3} 
+                  sx={{ p: 2, mb: 3 }}
+                >
+                  <Typography variant="h6" gutterBottom>
+                    Gráfica: {empresaSeleccionada.name}
+                  </Typography>
+                  <StockChart company={empresaSeleccionada.name} refExterno={chartRef} />
+                </Paper>
 
-                <Grid item xs={12} md={4}>
-                  <Paper 
-                    elevation={3} 
-                    sx={{ p: 2, mb: 3, height: '100%' }}
-                  >
-                    <CompraAcciones
-                      empresa={empresaSeleccionada}
-                      chartRef={chartRef}
-                      dineroDisponible={dineroDisponible}
-                      onCompraExitosa={handleCompra}
-                    />
-                  </Paper>
-                </Grid>
-              </Grid>
+                <Paper 
+                  elevation={3} 
+                  sx={{ p: 2, mb: 3 }}
+                >
+                  <CompraAcciones
+                    empresa={empresaSeleccionada}
+                    chartRef={chartRef}
+                    dineroDisponible={dineroDisponible}
+                    onCompraExitosa={handleCompra}
+                  />
+                </Paper>
+              </>
             )}
 
             {!empresaSeleccionada && (

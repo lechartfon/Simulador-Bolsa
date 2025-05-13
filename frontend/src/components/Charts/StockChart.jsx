@@ -74,7 +74,7 @@ const StockChart = ({ company, refExterno }) => {
   return (
     <div>
       {isLoading && <div style={{ textAlign: 'center', marginBottom: '10px' }}>Cargando datos...</div>}
-      <div ref={chartContainerRef} style={{ height: '500px', minWidth: '600px' }} />
+      <div ref={chartContainerRef} style={{ height: '500px', width: '100%' }} />
       {lastPrice && (
         <div style={{ textAlign: 'right', marginTop: '10px', fontWeight: 'bold' }}>
           Último precio: {lastPrice.toFixed(2)}€

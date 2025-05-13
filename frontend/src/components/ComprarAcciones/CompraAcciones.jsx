@@ -11,7 +11,12 @@ import {
   CardContent,
   CardActions,
   InputAdornment,
-  Chip
+  Chip,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions
 } from '@mui/material';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
@@ -31,6 +36,7 @@ const CompraAcciones = ({ empresa, chartRef, dineroDisponible, onCompraExitosa }
   const [empresaId, setEmpresaId] = useState(null);
   const [precioActual, setPrecioActual] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [openConfirmDialog, setOpenConfirmDialog] = useState(false);
 
   useEffect(() => {
     if (empresa && empresa.id) {
@@ -170,7 +176,7 @@ const CompraAcciones = ({ empresa, chartRef, dineroDisponible, onCompraExitosa }
     return () => clearTimeout(timer);
   }, [chartRef, empresa]);
 
-  const handleCompra = async () => {
+  const handleOpenConfirmDialog = () => {
     if (!empresa) {
       setMensaje('Error: No hay empresa seleccionada.');
       setMensajeType('error');
@@ -197,6 +203,15 @@ const CompraAcciones = ({ empresa, chartRef, dineroDisponible, onCompraExitosa }
       return;
     }
 
+    setOpenConfirmDialog(true);
+  };
+
+  const handleCloseConfirmDialog = () => {
+    setOpenConfirmDialog(false);
+  };
+
+  const handleCompra = async () => {
+    handleCloseConfirmDialog();
     setIsLoading(true);
 
     try {
@@ -228,7 +243,7 @@ const CompraAcciones = ({ empresa, chartRef, dineroDisponible, onCompraExitosa }
       const response = await authAxios.post('/comprar', data);
 
       if (response.status === 200) {
-        onCompraExitosa(cantidad, total);
+        onCompraExitosa(cantidad, Math.round(precioActual * cantidad * 100) / 100);
         setMensaje(`Compra realizada: ${cantidad} x ${empresa.name} a ${precioFormateado}€`);
         setMensajeType('success');
       } else {
@@ -266,108 +281,135 @@ const CompraAcciones = ({ empresa, chartRef, dineroDisponible, onCompraExitosa }
   };
 
   return (
-    <Card variant="outlined">
-      <CardContent>
-        <Typography variant="h5" component="div" gutterBottom>
-          Comprar acciones
-        </Typography>
-        {empresa && (
-          <Typography variant="h6" color="text.secondary" gutterBottom>
-            {empresa.name} {empresa.symbol && `(${empresa.symbol})`}
+    <>
+      <Card variant="outlined">
+        <CardContent>
+          <Typography variant="h5" component="div" gutterBottom>
+            Comprar acciones
           </Typography>
-        )}
-        
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
-          <Typography variant="body1">
-            Dinero disponible:
-          </Typography>
-          <Chip 
-            icon={<AttachMoneyIcon />} 
-            label={`${dineroDisponible.toFixed(2)}€`} 
-            color="primary"
-            variant="outlined"
-          />
-        </Box>
-        
-        {precioActual && (
+          {empresa && (
+            <Typography variant="h6" color="text.secondary" gutterBottom>
+              {empresa.name} {empresa.symbol && `(${empresa.symbol})`}
+            </Typography>
+          )}
+          
           <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
             <Typography variant="body1">
-              Precio actual:
+              Dinero disponible:
             </Typography>
             <Chip 
-              label={`${precioActual.toFixed(2)}€`} 
-              color="secondary"
+              icon={<AttachMoneyIcon />} 
+              label={`${dineroDisponible.toFixed(2)}€`} 
+              color="primary"
               variant="outlined"
             />
           </Box>
-        )}
+          
+          {precioActual && (
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
+              <Typography variant="body1">
+                Precio actual:
+              </Typography>
+              <Chip 
+                label={`${precioActual.toFixed(2)}€`} 
+                color="secondary"
+                variant="outlined"
+              />
+            </Box>
+          )}
+          
+          <Divider sx={{ my: 2 }} />
+          
+          <Box sx={{ mb: 2 }}>
+            <TextField
+              label="Cantidad"
+              type="number"
+              fullWidth
+              variant="outlined"
+              value={cantidad}
+              InputProps={{
+                inputProps: { min: 1 },
+                endAdornment: <InputAdornment position="end">acciones</InputAdornment>,
+              }}
+              onChange={(e) => setCantidad(parseInt(e.target.value) || 1)}
+            />
+          </Box>
+          
+          {precioActual && (
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
+              <Typography variant="body1" fontWeight="bold">
+                Total a pagar:
+              </Typography>
+              <Typography variant="body1" fontWeight="bold" color="secondary">
+                {calculaTotal()}€
+              </Typography>
+            </Box>
+          )}
+        </CardContent>
         
-        <Divider sx={{ my: 2 }} />
-        
-        <Box sx={{ mb: 2 }}>
-          <TextField
-            label="Cantidad"
-            type="number"
+        <CardActions>
+          <Button 
+            variant="contained" 
             fullWidth
-            variant="outlined"
-            value={cantidad}
-            InputProps={{
-              inputProps: { min: 1 },
-              endAdornment: <InputAdornment position="end">acciones</InputAdornment>,
-            }}
-            onChange={(e) => setCantidad(parseInt(e.target.value) || 1)}
-          />
-        </Box>
+            color="primary"
+            startIcon={<ShoppingCartIcon />}
+            onClick={handleOpenConfirmDialog}
+            disabled={isLoading || !empresaId || !precioActual}
+          >
+            {isLoading ? "Procesando..." : "Comprar"}
+          </Button>
+        </CardActions>
         
-        {precioActual && (
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
-            <Typography variant="body1" fontWeight="bold">
-              Total a pagar:
-            </Typography>
-            <Typography variant="body1" fontWeight="bold" color="secondary">
-              {calculaTotal()}€
-            </Typography>
+        {mensaje && (
+          <Box sx={{ px: 2, pb: 2 }}>
+            <Alert severity={mensajeType}>
+              {mensaje}
+            </Alert>
           </Box>
         )}
-      </CardContent>
+        
+        {!empresaId && empresa && (
+          <Box sx={{ px: 2, pb: 2 }}>
+            <Alert severity="warning">
+              Cargando datos de la empresa...
+            </Alert>
+          </Box>
+        )}
+        
+        {!precioActual && empresa && (
+          <Box sx={{ px: 2, pb: 2 }}>
+            <Alert severity="warning">
+              Esperando a que se cargue el precio actual...
+            </Alert>
+          </Box>
+        )}
+      </Card>
       
-      <CardActions>
-        <Button 
-          variant="contained" 
-          fullWidth
-          color="primary"
-          startIcon={<ShoppingCartIcon />}
-          onClick={handleCompra}
-          disabled={isLoading || !empresaId || !precioActual}
-        >
-          {isLoading ? "Procesando..." : "Comprar"}
-        </Button>
-      </CardActions>
-      
-      {mensaje && (
-        <Box sx={{ px: 2, pb: 2 }}>
-          <Alert severity={mensajeType}>
-            {mensaje}
-          </Alert>
-        </Box>
-      )}
-      
-      {!empresaId && empresa && (
-        <Box sx={{ px: 2, pb: 2 }}>
-          <Alert severity="warning">
-            Cargando datos de la empresa...
-          </Alert>
-        </Box>
-      )}
-      
-      {!precioActual && empresa && (
-        <Box sx={{ px: 2, pb: 2 }}>
-          <Alert severity="warning">
-            Esperando a que se cargue el precio actual...
-          </Alert>
-        </Box>
-      )}
-    </Card>
+      <Dialog
+        open={openConfirmDialog}
+        onClose={handleCloseConfirmDialog}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogTitle id="alert-dialog-title">
+          {"Confirmar compra de acciones"}
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">
+            Estás a punto de comprar {cantidad} acciones de {empresa?.name} por un total de {calculaTotal()}€. 
+            ¿Estás seguro de que deseas realizar esta operación?
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseConfirmDialog} color="error">
+            Cancelar
+          </Button>
+          <Button onClick={handleCompra} color="primary" variant="contained" autoFocus>
+            Confirmar compra
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </>
   );
 };
 
