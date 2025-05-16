@@ -13,14 +13,14 @@ import { ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import theme from './theme';
 
-// Protected route component
-const ProtectedRoute = ({ children }) => {
+//comprueba si el usuario ha iniciado sesión
+function ProtectedRoute({ children }) {
   const token = localStorage.getItem('token');
   if (!token) {
     return <Navigate to="/login" replace />;
   }
   return children;
-};
+}
 
 function App() {
   return (
@@ -28,12 +28,11 @@ function App() {
       <CssBaseline />
       <Router>
         <Routes>
-          {/* Public routes */}
+          {/* Rutas públicas */}
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/" element={<LandingPage />} />
           
-          {/* Protected routes with Layout */}
           <Route path="/dashboard" element={
             <ProtectedRoute>
               <Layout>
@@ -70,7 +69,6 @@ function App() {
             </ProtectedRoute>
           } />
           
-          {/* Redirect unknown routes to Dashboard if logged in, otherwise to Login */}
           <Route path="*" element={
             <Navigate to="/dashboard" replace />
           } />

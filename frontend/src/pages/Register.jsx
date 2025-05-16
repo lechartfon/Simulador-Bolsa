@@ -1,5 +1,5 @@
-import RegisterForm from '../components/RegisterForm';
+import FormularioRegistro from '../components/Register/RegisterForm';
 
 export default function Register() {
-  return <RegisterForm />;
+  return <FormularioRegistro />;
 }

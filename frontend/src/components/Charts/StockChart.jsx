@@ -4,19 +4,15 @@ import axios from 'axios';
 
 window.chartData = window.chartData || {};
 
-/**
- * Componente para mostrar gráfica de precios de acciones
- * @param {Object} props - Propiedades del componente
- * @param {string} props.company - Nombre de la empresa
- * @param {Object} props.refExterno - Referencia externa para acceder al gráfico desde otros componentes
- */
+// Este componente muestra un gráfico con los precios de las acciones
 const StockChart = ({ company, refExterno }) => {
-  const chartContainerRef = useRef(null);
+  const chartContainerRef = useRef(null); 
   const chartRef = useRef(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [lastPrice, setLastPrice] = useState(null);
+  const [isLoading, setIsLoading] = useState(false); 
+  const [lastPrice, setLastPrice] = useState(null); 
 
   useEffect(() => {
+    // Guardamos referencia si nos pasan una
     if (refExterno) {
       refExterno.current = chartRef.current;
     }
@@ -30,8 +26,10 @@ const StockChart = ({ company, refExterno }) => {
         const data = response.data;
         
         if (data && data.length > 0) {
+          window.chartData = window.chartData || {};
           window.chartData[company] = data;
           
+          // Obtengo último precio
           const lastPoint = data[data.length - 1];
           if (lastPoint && lastPoint.length >= 2) {
             setLastPrice(lastPoint[1]);
@@ -39,10 +37,10 @@ const StockChart = ({ company, refExterno }) => {
           }
         }
         
+        // Creo o actualizo la gráfica
         if (chartRef.current) {
           chartRef.current.series[0].setData(data);
           chartRef.current.setTitle({ text: `Histórico: ${company}` });
-          chartRef.current.lastPrice = lastPoint ? lastPoint[1] : null;
         } else {
           chartRef.current = Highcharts.stockChart(
             chartContainerRef.current,
@@ -56,13 +54,14 @@ const StockChart = ({ company, refExterno }) => {
               }]
             }
           );
-          
-          if (chartRef.current) {
-            chartRef.current.lastPrice = lastPoint ? lastPoint[1] : null;
-          }
+        }
+        
+        // Guardo último precio en la referencia
+        if (chartRef.current && lastPoint) {
+          chartRef.current.lastPrice = lastPoint[1];
         }
       } catch (error) {
-        console.error("Error fetching stock data:", error);
+        console.error("Error cargando datos:", error);
       } finally {
         setIsLoading(false);
       }

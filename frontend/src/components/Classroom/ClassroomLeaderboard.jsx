@@ -24,58 +24,63 @@ import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
 import InfoIcon from '@mui/icons-material/Info';
 
-const ClassroomLeaderboard = ({ classroom }) => {
-  const [leaderboard, setLeaderboard] = useState([]);
-  const [loading, setLoading] = useState(false);
+const TablaClasificacion = ({ classroom }) => {
+  const [ranking, setRanking] = useState([]);
+  const [cargando, setCargando] = useState(false); 
   const [error, setError] = useState('');
 
+  // Cargar datos cuando se muestra el componente o cambia la clase
   useEffect(() => {
     if (classroom) {
-      fetchLeaderboard();
+      cargarClasificacion();
     }
   }, [classroom]);
 
-  const fetchLeaderboard = async () => {
-    setLoading(true);
+  const cargarClasificacion = async () => {
+    setCargando(true);
     setError('');
 
     try {
       const token = localStorage.getItem('token');
-      const authAxios = axios.create({
+      const clienteHTTP = axios.create({
         baseURL: 'http://localhost:8000',
         headers: {
-          'Authorization': `Bearer ${token}`,
+          'Authorization': `Bearer ${token}`, 
           'Content-Type': 'application/json'
         }
       });
 
-      const response = await authAxios.get(`/classrooms/${classroom.id}/leaderboard`);
-      setLeaderboard(response.data);
-      setLoading(false);
+      const respuesta = await clienteHTTP.get(`/classrooms/${classroom.id}/leaderboard`);
+      
+      setRanking(respuesta.data);
+      
+      setCargando(false);
     } catch (error) {
-      setLoading(false);
-      console.error('Error al obtener tabla de clasificación:', error);
+      setCargando(false);
+      
+      console.error('¡Ups! No pudimos cargar la clasificación:', error);
+      
       if (error.response && error.response.data) {
         setError(error.response.data.detail || 'Error al cargar la clasificación');
       } else {
-        setError('Error al conectar con el servidor');
+        setError('No pudimos conectar con el servidor. ¿Está encendido?');
       }
     }
   };
 
-  // Función para formatear el correo electrónico (ocultar parte del dominio)
-  const formatEmail = (email) => {
+  const ocultarEmail = (email) => {
     if (!email) return '';
     
-    const parts = email.split('@');
-    if (parts.length !== 2) return email;
+    const partes = email.split('@');
+    if (partes.length !== 2) return email;
     
-    const username = parts[0];
-    const domain = parts[1];
+    const usuario = partes[0];
+    const dominio = partes[1];
     
-    // Mostrar solo el nombre de usuario y la primera parte del dominio
-    const domainParts = domain.split('.');
-    return `${username}@${domainParts[0].charAt(0)}***`;
+    const partesDominio = dominio.split('.');
+    const dominioOculto = `${partesDominio[0].charAt(0)}***`;
+    
+    return `${usuario}@${dominioOculto}`;
   };
 
   return (
@@ -86,7 +91,7 @@ const ClassroomLeaderboard = ({ classroom }) => {
       </Typography>
       <Divider sx={{ mb: 2 }} />
       
-      {loading ? (
+      {cargando ? (
         <Box display="flex" justifyContent="center" alignItems="center" height="200px">
           <CircularProgress />
         </Box>
@@ -96,26 +101,33 @@ const ClassroomLeaderboard = ({ classroom }) => {
         </Alert>
       ) : (
         <Box>
-          {leaderboard.length === 0 ? (
+          {/* Si no hay datos, mostrar mensaje */}
+          {ranking.length === 0 ? (
             <Typography variant="body1" color="text.secondary" align="center" sx={{ py: 4 }}>
               No hay datos disponibles
             </Typography>
           ) : (
             <Paper elevation={0} variant="outlined">
               <Table>
+                {/* Cabecera de la tabla */}
                 <TableHead>
                   <TableRow sx={{ bgcolor: 'primary.light' }}>
+                    {/* Columna de posición */}
                     <TableCell width="80px">
                       <Typography variant="subtitle2" fontWeight="bold">Posición</Typography>
                     </TableCell>
+                    
+                    {/* Columna de estudiante */}
                     <TableCell>
                       <Typography variant="subtitle2" fontWeight="bold">Estudiante</Typography>
                     </TableCell>
+                    
+                    {/* Columna de valor actual */}
                     <TableCell align="right">
                       <Box display="flex" alignItems="center" justifyContent="flex-end">
                         <Typography variant="subtitle2" fontWeight="bold">Valor Actual</Typography>
                         <Tooltip 
-                          title="El valor actual representa la suma del dinero en efectivo disponible más el valor de todas las acciones compradas al precio actual del mercado." 
+                          title="Es todo lo que tiene el estudiante: dinero en efectivo + valor de todas sus acciones al precio actual." 
                           placement="top"
                           arrow
                         >
@@ -129,7 +141,7 @@ const ClassroomLeaderboard = ({ classroom }) => {
                       <Box display="flex" alignItems="center" justifyContent="flex-end">
                         <Typography variant="subtitle2" fontWeight="bold">Rendimiento</Typography>
                         <Tooltip 
-                          title="El rendimiento muestra el porcentaje de ganancia o pérdida respecto a la inversión inicial de 50.000€. Se calcula como (Valor Actual - 50.000€) / 50.000€ × 100%." 
+                          title="El porcentaje de ganancia o pérdida respecto a los 50.000€ iniciales. Se calcula así: (Valor Actual - 50.000€) / 50.000€ × 100%" 
                           placement="top"
                           arrow
                         >
@@ -141,14 +153,16 @@ const ClassroomLeaderboard = ({ classroom }) => {
                     </TableCell>
                   </TableRow>
                 </TableHead>
+                
                 <TableBody>
-                  {leaderboard.map((member, index) => (
+                  {ranking.map((estudiante, indice) => (
                     <TableRow 
-                      key={member.user_id}
+                      key={estudiante.user_id}
                       sx={{
-                        bgcolor: index === 0 ? 'rgba(255, 215, 0, 0.1)' : 
-                               index === 1 ? 'rgba(192, 192, 192, 0.1)' : 
-                               index === 2 ? 'rgba(205, 127, 50, 0.1)' : 'inherit',
+                        bgcolor: indice === 0 ? 'rgba(255, 215, 0, 0.1)' : // Oro para el primero
+                               indice === 1 ? 'rgba(192, 192, 192, 0.1)' : // Plata para el segundo
+                               indice === 2 ? 'rgba(205, 127, 50, 0.1)' : // Bronce para el tercero
+                               'inherit', // Normal para el resto
                         '&:hover': {
                           bgcolor: 'action.hover'
                         }
@@ -156,48 +170,50 @@ const ClassroomLeaderboard = ({ classroom }) => {
                     >
                       <TableCell>
                         <Box display="flex" alignItems="center" justifyContent="center">
-                          {index < 3 ? (
+                          {indice < 3 ? (
                             <EmojiEventsIcon 
-                              color={index === 0 ? 'warning' : index === 1 ? 'action' : 'error'} 
+                              color={indice === 0 ? 'warning' : indice === 1 ? 'action' : 'error'} 
                               fontSize="small"
                             />
                           ) : (
                             <Typography variant="body1" fontWeight="medium">
-                              {index + 1}
+                              {indice + 1}
                             </Typography>
                           )}
                         </Box>
                       </TableCell>
+                      
                       <TableCell>
                         <Box display="flex" alignItems="center">
                           <AccountCircleIcon sx={{ mr: 1, color: 'primary.main' }} />
-                          <Typography>{formatEmail(member.email)}</Typography>
+                          <Typography>{ocultarEmail(estudiante.email)}</Typography>
                         </Box>
                       </TableCell>
                       <TableCell align="right">
                         <Tooltip 
-                          title={`Efectivo disponible + valor de acciones compradas. Inversión inicial: 50.000€`}
+                          title={`Dinero en efectivo + valor de acciones. Empezó con 50.000€`}
                           placement="left"
                           arrow
                         >
                           <Box display="inline-flex" alignItems="center">
                             <MonetizationOnIcon fontSize="small" sx={{ mr: 0.5, color: 'success.main' }} />
                             <Typography fontWeight="medium">
-                              {member.current_value.toFixed(2)}€
+                              {estudiante.current_value.toFixed(2)}€
                             </Typography>
                           </Box>
                         </Tooltip>
                       </TableCell>
+                      
                       <TableCell align="right">
                         <Tooltip 
-                          title={`Ganancia o pérdida respecto a la inversión inicial de 50.000€`}
+                          title={`Cuánto ha ganado o perdido desde los 50.000€ iniciales`}
                           placement="left"
                           arrow
                         >
                           <Chip
-                            icon={member.profit_percentage > 0 ? <TrendingUpIcon /> : <TrendingDownIcon />}
-                            label={`${member.profit_percentage > 0 ? '+' : ''}${member.profit_percentage.toFixed(2)}%`}
-                            color={member.profit_percentage > 0 ? 'success' : 'error'}
+                            icon={estudiante.profit_percentage > 0 ? <TrendingUpIcon /> : <TrendingDownIcon />}
+                            label={`${estudiante.profit_percentage > 0 ? '+' : ''}${estudiante.profit_percentage.toFixed(2)}%`}
+                            color={estudiante.profit_percentage > 0 ? 'success' : 'error'}
                             variant="outlined"
                             size="small"
                           />
@@ -215,4 +231,4 @@ const ClassroomLeaderboard = ({ classroom }) => {
   );
 };
 
-export default ClassroomLeaderboard; 
+export default TablaClasificacion; 

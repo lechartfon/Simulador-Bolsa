@@ -1,19 +1,12 @@
 import { createTheme } from '@mui/material/styles';
 
-// Crea un tema personalizado para la aplicación de simulación de bolsa
 const theme = createTheme({
   palette: {
     primary: {
-      light: '#4dabf5',
       main: '#1976d2',
-      dark: '#1565c0',
-      contrastText: '#fff',
     },
     secondary: {
-      light: '#33eb91',
       main: '#00c853',
-      dark: '#009624',
-      contrastText: '#fff',
     },
     error: {
       main: '#f44336',
@@ -67,30 +60,7 @@ const theme = createTheme({
     MuiButton: {
       styleOverrides: {
         root: {
-          borderRadius: 4,
           textTransform: 'none',
-          fontWeight: 500,
-        },
-        containedPrimary: {
-          boxShadow: '0 2px 5px rgba(0, 0, 0, 0.16)',
-          '&:hover': {
-            boxShadow: '0 5px 15px rgba(0, 0, 0, 0.16)',
-          },
-        },
-      },
-    },
-    MuiCard: {
-      styleOverrides: {
-        root: {
-          borderRadius: 8,
-          boxShadow: '0 2px 12px rgba(0, 0, 0, 0.1)',
-        },
-      },
-    },
-    MuiTableHead: {
-      styleOverrides: {
-        root: {
-          backgroundColor: '#f5f5f5',
         },
       },
     },

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
-import AccountValueChart from '../components/Charts/AccountValueChart';
+import GraficaValorCuenta from '../components/Charts/AccountValueChart';
 import { 
   Container, 
   Typography, 
@@ -13,8 +13,6 @@ import {
   CircularProgress,
   Card,
   CardContent,
-  useMediaQuery,
-  useTheme,
 } from '@mui/material';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import TrendingDownIcon from '@mui/icons-material/TrendingDown';
@@ -28,65 +26,74 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const navigate = useNavigate();
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-
-  const getAuthAxios = () => {
+  const checkLogin = () => {
     const token = localStorage.getItem('token');
     if (!token) {
       navigate('/login');
-      return null;
+      return false;
     }
-    
-    return axios.create({
-      baseURL: 'http://localhost:8000',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      }
-    });
+    return true;
   };
-
   const cargarDatos = async () => {
     setLoading(true);
     setError('');
     
     try {
-      const authAxios = getAuthAxios();
-      if (!authAxios) return;
+      // Comprobar si hay token
+      const token = localStorage.getItem('token');
+      if (!token) {
+        navigate('/login');
+        return;
+      }
 
-      const walletResponse = await authAxios.get('/wallet');
+      const walletResponse = await axios.get('http://localhost:8000/wallet', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
       
-      const portfolioResponse = await authAxios.get('/portfolio');
+      const portfolioResponse = await axios.get('http://localhost:8000/portfolio', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
       setPortfolio(portfolioResponse.data);
       
-      const valorAcciones = portfolioResponse.data.reduce(
-        (total, stock) => total + (stock.shares_owned * stock.current_price), 
-        0
-      );
+      let valorAcciones = 0;
+      for (let i = 0; i < portfolioResponse.data.length; i++) {
+        valorAcciones += portfolioResponse.data[i].shares_owned * portfolioResponse.data[i].current_price;
+      }
       
-      const gananciasPerdidasTotales = portfolioResponse.data.reduce(
-        (total, stock) => total + (stock.current_price - stock.avg_purchase_price) * stock.shares_owned, 
-        0
-      );
+      let gananciasPerdidasTotales = 0;
+      for (let i = 0; i < portfolioResponse.data.length; i++) {
+        const stock = portfolioResponse.data[i];
+        gananciasPerdidasTotales += (stock.current_price - stock.avg_purchase_price) * stock.shares_owned;
+      }
       
-      const inversionTotal = portfolioResponse.data.reduce(
-        (total, stock) => total + (stock.avg_purchase_price * stock.shares_owned), 
-        0
-      );
+      let inversionTotal = 0;
+      for (let i = 0; i < portfolioResponse.data.length; i++) {
+        inversionTotal += portfolioResponse.data[i].avg_purchase_price * portfolioResponse.data[i].shares_owned;
+      }
       
-      const porcentajeCambio = inversionTotal > 0 
-        ? (gananciasPerdidasTotales / inversionTotal) * 100 
-        : 0;
-      
+      let porcentajeCambio = 0;
+      if (inversionTotal > 0) {
+        porcentajeCambio = (gananciasPerdidasTotales / inversionTotal) * 100;
+      }
       let mejorAccion = null;
       let peorAccion = null;
       
       if (portfolioResponse.data.length > 0) {
-        const accionesOrdenadas = [...portfolioResponse.data].sort((a, b) => {
+        let accionesOrdenadas = [];
+        for (let i = 0; i < portfolioResponse.data.length; i++) {
+          accionesOrdenadas.push(portfolioResponse.data[i]);
+        }
+        
+        accionesOrdenadas.sort(function(a, b) {
           const gananciaA = (a.current_price - a.avg_purchase_price) * a.shares_owned;
           const gananciaB = (b.current_price - b.avg_purchase_price) * b.shares_owned;
-          return gananciaB - gananciaA;
+          if (gananciaB > gananciaA) return 1;
+          if (gananciaB < gananciaA) return -1;
+          return 0;
         });
         
         mejorAccion = accionesOrdenadas[0];
@@ -96,11 +103,11 @@ const Dashboard = () => {
       setAccountSummary({
         balance: walletResponse.data.balance,
         valorTotal: valorAcciones + walletResponse.data.balance,
-        valorAcciones,
-        gananciasPerdidasTotales,
-        porcentajeCambio,
-        mejorAccion,
-        peorAccion
+        valorAcciones: valorAcciones,
+        gananciasPerdidasTotales: gananciasPerdidasTotales,
+        porcentajeCambio: porcentajeCambio,
+        mejorAccion: mejorAccion,
+        peorAccion: peorAccion
       });
     } catch (error) {
       console.error("Error al cargar datos:", error);
@@ -114,23 +121,14 @@ const Dashboard = () => {
       setLoading(false);
     }
   };
-
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      navigate('/login');
-      return;
-    }
-    
+    if (!checkLogin()) return;
     cargarDatos();
   }, [navigate]);
 
 
   const formatCurrency = (value) => {
-    return new Intl.NumberFormat('es-ES', {
-      style: 'currency',
-      currency: 'EUR'
-    }).format(value);
+    return value.toFixed(2) + " €";
   };
 
   return (
@@ -147,21 +145,19 @@ const Dashboard = () => {
           Dashboard
           </Typography>
 
-          {/* Gráfica del valor de la cuenta */}
+          {/* Gráfica del valor de la cuenta */}          
           <Paper 
-            elevation={3} 
+            elevation={2} 
             sx={{ 
-              mb: 4, 
-              p: { xs: 2, md: 3 },
-              borderRadius: 2,
+              mb: 3, 
+              p: 2,
               backgroundColor: 'white'
             }}
-          >
-            <Typography variant="h5" gutterBottom sx={{ mb: 2, textAlign: { xs: 'center', md: 'left' } }}>
+          >            <Typography variant="h5" gutterBottom>
               Evolución del valor de la cuenta
             </Typography>
             <Box sx={{ width: '100%', height: { xs: '300px', md: '400px' }, overflow: 'hidden' }}>
-              <AccountValueChart 
+              <GraficaValorCuenta 
                 accountValue={accountSummary.valorTotal}
                 cashBalance={accountSummary.balance}
                 stocksValue={accountSummary.valorAcciones}
@@ -169,42 +165,27 @@ const Dashboard = () => {
             </Box>
           </Paper>
 
-          {/* Información de la cuenta*/}
+          {/* Información de la cuenta*/}          
           <Paper 
             elevation={3} 
             sx={{ 
-              mb: 4, 
-              p: { xs: 2, md: 3 },
-              borderRadius: 2,
+              mb: 3, 
+              p: 2,
               backgroundColor: 'white'
             }}
           >
-            <Typography variant="h5" gutterBottom sx={{ mb: 2, textAlign: { xs: 'center', md: 'left' } }}>
+            <Typography variant="h5" gutterBottom>
               Información de Cuenta
             </Typography>
             <Grid container spacing={3} justifyContent="center">
-              {/* Valor Total de la Cuenta */}
-              <Grid item xs={12} sm={10} md={6} sx={{ display: 'flex', justifyContent: 'center' }}>
-                <Card 
-                  elevation={2} 
-                  sx={{ 
-                    height: '100%',
-                    borderRadius: 2,
-                    transition: 'transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out',
-                    '&:hover': {
-                      transform: 'translateY(-5px)',
-                      boxShadow: '0 8px 16px rgba(0,0,0,0.1)'
-                    },
-                    display: 'flex',
-                    flexDirection: 'column',
-                    width: { xs: '100%', sm: '90%', md: '400px' }
-                  }}
-                >
-                  <CardContent sx={{ p: 3, flexGrow: 1 }}>
-                    <Typography variant="h6" color="text.secondary" gutterBottom sx={{ textAlign: { xs: 'center', md: 'left' } }}>
+              {/* Valor Total de la Cuenta */}              
+              <Grid item xs={12} sm={6}>
+                <Card>
+                  <CardContent>
+                    <Typography variant="h6" color="text.secondary" gutterBottom>
                       Valor Total de la Cuenta
                     </Typography>
-                    <Typography variant="h3" component="div" sx={{ textAlign: 'center' }}>
+                    <Typography variant="h3" align="center">
                       {formatCurrency(accountSummary.valorTotal)}
                     </Typography>
                     <Box sx={{ display: 'flex', alignItems: 'center', mt: 1, justifyContent: 'center' }}>
@@ -216,7 +197,6 @@ const Dashboard = () => {
                       <Typography
                         variant="body1"
                         color={accountSummary.gananciasPerdidasTotales >= 0 ? "success.main" : "error.main"}
-                        component="span"
                       >
                         {accountSummary.porcentajeCambio.toFixed(2)}% ({formatCurrency(accountSummary.gananciasPerdidasTotales)})
                       </Typography>
@@ -225,31 +205,17 @@ const Dashboard = () => {
                 </Card>
               </Grid>
 
-              {/* Dinero Disponible */}
-              <Grid item xs={12} sm={10} md={6} sx={{ display: 'flex', justifyContent: 'center' }}>
-                <Card 
-                  elevation={2} 
-                  sx={{ 
-                    height: '100%',
-                    borderRadius: 2,
-                    transition: 'transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out',
-                    '&:hover': {
-                      transform: 'translateY(-5px)',
-                      boxShadow: '0 8px 16px rgba(0,0,0,0.1)'
-                    },
-                    display: 'flex',
-                    flexDirection: 'column',
-                    width: { xs: '100%', sm: '90%', md: '400px' }
-                  }}
-                >
-                  <CardContent sx={{ p: 3, flexGrow: 1 }}>
-                    <Typography variant="h6" color="text.secondary" gutterBottom sx={{ textAlign: { xs: 'center', md: 'left' } }}>
-                      Dinero Disponible para Invertir
+              {/* Dinero Disponible */}              
+              <Grid item xs={12} sm={6}>
+                <Card>
+                  <CardContent>
+                    <Typography variant="h6" color="text.secondary" gutterBottom>
+                      Dinero Disponible
                     </Typography>
-                    <Typography variant="h3" component="div" sx={{ textAlign: 'center' }}>
+                    <Typography variant="h3" align="center">
                       {formatCurrency(accountSummary.balance)}
                     </Typography>
-                    <Typography variant="body2" color="text.secondary" sx={{ mt: 1, textAlign: 'center' }}>
+                    <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }} align="center">
                       Valor de Acciones: {formatCurrency(accountSummary.valorAcciones)}
                     </Typography>
                   </CardContent>

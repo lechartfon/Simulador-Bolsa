@@ -32,29 +32,21 @@ import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import SellIcon from '@mui/icons-material/Sell';
 import HistoryIcon from '@mui/icons-material/History';
 
-// Componente TabPanel para las pestañas
+// Panel para las pestañas
 function TabPanel(props) {
-  const { children, value, index, ...other } = props;
-
-  return (
-    <div
-      role="tabpanel"
-      hidden={value !== index}
-      id={`simple-tabpanel-${index}`}
-      aria-labelledby={`simple-tab-${index}`}
-      {...other}
-    >
-      {value === index && (
+  if (props.value === props.index) {
+    return (
+      <div id={`tabpanel-${props.index}`}>
         <Box sx={{ p: 3 }}>
-          {children}
+          {props.children}
         </Box>
-      )}
-    </div>
-  );
+      </div>
+    );
+  }
+  return null;
 }
 
-const PortfolioPage = () => {
-  const [tabValue, setTabValue] = useState(0);
+const PortfolioPage = () => {  const [tabValue, setTabValue] = useState(0);
   const [portfolio, setPortfolio] = useState([]);
   const [transactions, setTransactions] = useState([]);
   const [dineroDisponible, setDineroDisponible] = useState(null);
@@ -66,99 +58,107 @@ const PortfolioPage = () => {
   const [mensaje, setMensaje] = useState('');
   const [mensajeType, setMensajeType] = useState('info');
   const navigate = useNavigate();
-
-  const getAuthAxios = () => {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      navigate('/login');
-      return null;
-    }
-    
-    return axios.create({
-      baseURL: 'http://localhost:8000',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      }
-    });
-  };
-
-  const cargarSaldo = async () => {
+   const cargarSaldo = async () => {
     try {
-      const authAxios = getAuthAxios();
-      if (!authAxios) return;
+      const token = localStorage.getItem('token');
+      if (!token) {
+        navigate('/login');
+        return;
+      }
       
-      const response = await authAxios.get('/wallet');
-      if (response.data && typeof response.data.balance === 'number') {
+      const response = await axios.get('http://localhost:8000/wallet', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      if (response.data && response.data.balance) {
         setDineroDisponible(response.data.balance);
       } else {
-        console.error("Formato de respuesta inesperado:", response.data);
-        setError('No se pudo cargar el saldo correctamente');
+        setError('No se pudo cargar el saldo');
       }
     } catch (error) {
       console.error("Error al cargar el saldo:", error);
-      if (error.response?.status === 401) {
+      
+      if (error.response && error.response.status === 401) {
         localStorage.removeItem('token');
         navigate('/login');
       } else {
-        setError('Error al cargar el saldo. Por favor, recarga la página.');
+        setError('Error al cargar el saldo');
       }
     }
   };
 
   const cargarPortfolio = async () => {
     try {
-      const authAxios = getAuthAxios();
-      if (!authAxios) return;
+      const token = localStorage.getItem('token');
+      if (!token) {
+        navigate('/login');
+        return;
+      }
       
-      const response = await authAxios.get('/portfolio');
+      const response = await axios.get('http://localhost:8000/portfolio', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
       setPortfolio(response.data);
     } catch (error) {
       console.error("Error al cargar el portfolio:", error);
-      if (error.response?.status === 401) {
+      
+      if (error.response && error.response.status === 401) {
         localStorage.removeItem('token');
         navigate('/login');
       } else {
-        setError('Error al cargar el portfolio. Por favor, recarga la página.');
+        setError('Error al cargar el portfolio');
       }
     }
   };
 
   const cargarTransacciones = async () => {
     try {
-      const authAxios = getAuthAxios();
-      if (!authAxios) return;
+      const token = localStorage.getItem('token');
+      if (!token) {
+        navigate('/login');
+        return;
+      }
       
-      const response = await authAxios.get('/transacciones');
+      const response = await axios.get('http://localhost:8000/transacciones', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
       setTransactions(response.data);
     } catch (error) {
-      console.error("Error al cargar las transacciones:", error);
-      if (error.response?.status === 401) {
+      console.error("Error al cargar transacciones:", error);
+      
+      if (error.response && error.response.status === 401) {
         localStorage.removeItem('token');
         navigate('/login');
       } else {
-        setError('Error al cargar las transacciones. Por favor, recarga la página.');
+        setError('Error al cargar transacciones');
       }
     }
   };
 
-  // Función para cargar todos los datos
   const cargarDatos = async () => {
     setLoading(true);
     setError('');
     
     try {
-      await Promise.all([
-        cargarSaldo(),
-        cargarPortfolio(),
-        cargarTransacciones()
-      ]);
+      await cargarSaldo();
+      
+      await cargarPortfolio();
+      
+      await cargarTransacciones();
     } catch (error) {
       console.error("Error al cargar datos:", error);
-      setError('Error al cargar los datos. Por favor, recarga la página.');
-    } finally {
-      setLoading(false);
+      setError('Error al cargar los datos');
     }
+    
+    setLoading(false);
   };
 
   useEffect(() => {
@@ -197,32 +197,46 @@ const PortfolioPage = () => {
     setSelectedStock(null);
     setCantidadVenta(1);
   };
-
   const handleVender = async () => {
     if (!selectedStock) return;
     
     try {
-      const authAxios = getAuthAxios();
-      if (!authAxios) return;
+      const token = localStorage.getItem('token');
+      if (!token) {
+        navigate('/login');
+        return;
+      }
       
+      // Datos para la venta
       const data = {
         company_id: selectedStock.company_id,
         quantity: cantidadVenta,
         price_per_share: selectedStock.current_price
       };
       
-      const response = await authAxios.post('/vender', data);
+      // Enviar petición
+      const response = await axios.post('http://localhost:8000/vender', data, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
       
       if (response.status === 200) {
-        setMensaje(`Venta exitosa: ${cantidadVenta} acciones de ${selectedStock.company_name}`);
+        setMensaje(`Vendiste ${cantidadVenta} acciones de ${selectedStock.company_name}`);
         setMensajeType('success');
+        
+        // Actualizar el saldo en el header
+        if (window.updateHeaderWallet) {
+          window.updateHeaderWallet();
+        }
         
         cargarDatos();
         handleCloseVender();
       }
     } catch (error) {
       console.error("Error al vender:", error);
-      setMensaje(error.response?.data?.detail || 'Error al procesar la venta');
+      setMensaje('Error al vender las acciones');
       setMensajeType('error');
     }
   };
@@ -358,13 +372,13 @@ const PortfolioPage = () => {
               )}
             </TabPanel>
 
-            {/* Pestaña de Historial de Transacciones */}
+            {/* Pestaña de Historial de Transacciones */}            
             <TabPanel value={tabValue} index={1}>
               {transactions.length === 0 ? (
                 <Paper 
-                  elevation={3} 
+                  elevation={2} 
                   sx={{ 
-                    p: 4, 
+                    p: 3, 
                     display: 'flex', 
                     justifyContent: 'center', 
                     alignItems: 'center',
@@ -393,15 +407,9 @@ const PortfolioPage = () => {
                       {transactions.map((transaction) => (
                         <TableRow key={transaction.id}>
                           <TableCell>{formatFecha(transaction.timestamp)}</TableCell>
+                          <TableCell>{transaction.company_name}</TableCell>
                           <TableCell>
-                            <Typography fontWeight="medium">
-                              {transaction.company_name}
-                            </Typography>
-                            {transaction.company_symbol && (
-                              <Typography variant="body2" color="text.secondary">
-                                {transaction.company_symbol}
-                              </Typography>
-                            )}
+                            {transaction.type === 'buy' ? 'Compra' : 'Venta'}
                           </TableCell>
                           <TableCell>
                             <Chip 
@@ -412,7 +420,6 @@ const PortfolioPage = () => {
                           </TableCell>
                           <TableCell align="right">{transaction.quantity}</TableCell>
                           <TableCell align="right">{transaction.price_per_share.toFixed(2)}€</TableCell>
-                          <TableCell align="right">{transaction.total_price.toFixed(2)}€</TableCell>
                         </TableRow>
                       ))}
                     </TableBody>

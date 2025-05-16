@@ -8,12 +8,9 @@ import {
   Grid,
   Card,
   CardContent,
-  CardMedia,
   AppBar,
   Toolbar,
-  useMediaQuery,
   useTheme,
-  Divider,
   Paper,
   Avatar,
 } from "@mui/material";
@@ -26,9 +23,8 @@ import SecurityIcon from "@mui/icons-material/Security";
 
 const LandingPage = () => {
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
-  const features = [
+const features = [
     {
       title: "Simulación Realista",
       description:
@@ -128,14 +124,13 @@ const LandingPage = () => {
             Registrarse
           </Button>
         </Toolbar>
-      </AppBar>
-
-      {/* Sección Hero */}
+      </AppBar>      
+      {/* Banner principal */}
       <Box
         sx={{
           pt: 8,
           pb: 6,
-          backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('/Fondo-Inversion.png')`,
+          backgroundImage: `url('/Fondo-Inversion.png')`, 
           backgroundSize: "cover",
           backgroundPosition: "center",
           color: "white",
@@ -198,9 +193,8 @@ const LandingPage = () => {
             </Button>
           </Box>
         </Container>
-      </Box>
-
-      {/* Sección Características Principales */}
+      </Box>      
+      {/* Lista de funcionalidades */}
       <Box sx={{ py: 8 }} maxWidth="lg">
         <Typography variant="h3" component="h2" align="center" gutterBottom>
           Características Principales
@@ -232,17 +226,15 @@ const LandingPage = () => {
                 }
               }}
             >
-              <Card
-                sx={{
+              <Card                sx={{
                   display: "flex",
                   flexDirection: "column",
                   width: "100%",
                   minWidth: { xs: "90%", sm: 584 },
                   maxWidth: { xs: "90%", sm: 584 },
-                  transition: "transform 0.3s, box-shadow 0.3s",
+                  // Animación simplificada
                   "&:hover": {
-                    transform: "translateY(-8px)",
-                    boxShadow: "0 12px 20px rgba(0, 0, 0, 0.15)",
+                    boxShadow: "0 8px 12px rgba(0, 0, 0, 0.2)",
                   },
                 }}
                 elevation={3}
@@ -285,8 +277,7 @@ const LandingPage = () => {
           ))}
         </Grid>
       </Box>
-
-      {/* Sección Cómo Funciona */}
+    {/* Sección Cómo Funciona */}
       <Box sx={{ bgcolor: "background.paper", py: 8 }}>
         <Container maxWidth="lg">
           <Typography variant="h3" component="h2" align="center" gutterBottom>
@@ -299,7 +290,7 @@ const LandingPage = () => {
             paragraph
             sx={{ mb: 6 }}
           >
-            Tres sencillos pasos para comenzar tu camino en las inversiones
+            Tres pasos fáciles para empezar a invertir
           </Typography>
 
           <Grid container spacing={4} alignItems="stretch" justifyContent="center">
@@ -330,12 +321,11 @@ const LandingPage = () => {
                   justifyContent: "flex-start",
                   height: "100%"
                 }}
-              >
-                <Avatar
+              >                <Avatar
                   sx={{
-                    width: 60,
-                    height: 60,
-                    bgcolor: theme.palette.primary.main,
+                    width: 50,
+                    height: 50,
+                    bgcolor: "blue", 
                     mx: "auto",
                     mb: 3,
                   }}
@@ -378,12 +368,12 @@ const LandingPage = () => {
                   justifyContent: "flex-start",
                   height: "100%"
                 }}
-              >
-                <Avatar
+              >                
+              <Avatar
                   sx={{
-                    width: 60,
-                    height: 60,
-                    bgcolor: theme.palette.secondary.main,
+                    width: 50,
+                    height: 50,
+                    bgcolor: "purple", 
                     mx: "auto",
                     mb: 3,
                   }}
@@ -426,12 +416,12 @@ const LandingPage = () => {
                   justifyContent: "flex-start",
                   height: "100%"
                 }}
-              >
-                <Avatar
+              >                
+              <Avatar
                   sx={{
-                    width: 60,
-                    height: 60,
-                    bgcolor: theme.palette.success.main,
+                    width: 50,
+                    height: 50,
+                    bgcolor: "green", 
                     mx: "auto",
                     mb: 3,
                   }}
@@ -449,12 +439,11 @@ const LandingPage = () => {
             </Grid>
           </Grid>
         </Container>
-      </Box>
-
-      {/* Seccion CTA */}
+      </Box>      
+      {/* Sección para registrarse */}
       <Box
         sx={{
-          bgcolor: theme.palette.primary.main,
+          bgcolor: "#1976d2", 
           color: "white",
           py: 6,
           textAlign: "center",
@@ -497,7 +486,7 @@ const LandingPage = () => {
             color="textSecondary"
             component="p"
           >
-            Aprende a invertir de manera segura
+            Aprende a invertir sin riesgos
           </Typography>
           <Typography
             variant="body2"

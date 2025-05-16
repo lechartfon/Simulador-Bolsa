@@ -4,20 +4,16 @@ from sqlalchemy.orm import Session
 from ..database import get_db, SessionLocal
 from ..models import StockPrice, Company, Wallet, Transaction, TransactionType
 import datetime
-from pydantic import BaseModel
-from ..auth import get_current_user, verify_token
-from .. import models
-import logging
-from fastapi.security import OAuth2PasswordBearer
-from typing import Optional, Dict, Any, List
-import traceback
-from decimal import Decimal
-from sqlalchemy import desc, func, text
 import random
+from pydantic import BaseModel
+from ..auth import get_current_user
+from .. import models
+from typing import Optional, Dict, Any, List
+from decimal import Decimal
+from sqlalchemy import desc, text
 
+# Crear el router para manejar las rutas de acciones
 router = APIRouter()
-
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 
 class CompraRequest(BaseModel):
     company_id: int
@@ -48,193 +44,145 @@ async def get_wallet_balance(
     user: models.User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    """
-    Obtiene el saldo actual de la billetera del usuario autenticado.
-    Si el usuario no tiene billetera, crea una con saldo inicial.
-    """
-    try:
-        wallet = db.query(Wallet).filter(Wallet.user_id == user.id).first()
-        
-        # Si no existe una billetera, crear una nueva
-        if not wallet:
-            logging.info(f"Creando nueva billetera para usuario: {user.id}")
-            wallet = Wallet(user_id=user.id, balance=50000)
-            db.add(wallet)
-            db.commit()
-            db.refresh(wallet)
-        
-        # Convertir a float para la respuesta
-        balance = float(wallet.balance)
-        return {
-            "balance": balance,
-            "user_id": user.id
-        }
+    # Buscar la billetera del usuario
+    billetera = db.query(Wallet).filter(Wallet.user_id == user.id).first()
     
-    except Exception as e:
-        logging.error(f"Error al obtener billetera: {str(e)}")
-        logging.error(traceback.format_exc())
-        raise HTTPException(status_code=500, detail=f"Error al obtener balance: {str(e)}")
+    # Si no existe billetera, crear una
+    if not billetera:
+        print(f"Creando billetera para usuario: {user.email}")
+        billetera = Wallet(user_id=user.id, balance=50000)
+        db.add(billetera)
+        db.commit()
+        db.refresh(billetera)
+    
+    return {
+        "balance": float(billetera.balance),
+        "user_id": user.id
+    }
 
 @router.get("/stocks/{company_name}")
 def get_stock_data(company_name: str, db: Session = Depends(get_db)):
-    company = db.query(Company).filter(Company.name == company_name).first()
-    if not company:
+    empresa = db.query(Company).filter(Company.name == company_name).first()
+    if not empresa:
         raise HTTPException(status_code=404, detail="Empresa no encontrada")
 
-    prices = db.query(StockPrice).filter(StockPrice.company_id == company.id).order_by(StockPrice.timestamp).all()
+    precios = db.query(StockPrice).filter(
+        StockPrice.company_id == empresa.id
+    ).order_by(StockPrice.timestamp).all()
 
-    # Verificar si hay un precio para el día actual
-    today = datetime.datetime.utcnow().date()
-    has_today_price = False
-    last_price_value = 0
+    hoy = datetime.datetime.utcnow().date()
+    hay_precio_hoy = False
+    ultimo_precio = 0
     
-    if prices:
-        last_price = prices[-1]
-        last_price_value = last_price.price
-        has_today_price = last_price.timestamp.date() == today
+    if precios:
+        ultimo = precios[-1]
+        ultimo_precio = ultimo.price
+        hay_precio_hoy = ultimo.timestamp.date() == hoy
     
-    if not has_today_price and prices:
-        variation = (random.random() - 0.5) * 0.02  
-        new_price_value = last_price_value * (1 + variation)
+    if not hay_precio_hoy and precios:
+        variacion = random.uniform(-0.02, 0.02)  
+        nuevo_precio = ultimo_precio * (1 + variacion)
         
-        new_price = StockPrice(
-            company_id=company.id,
+        precio_hoy = StockPrice(
+            company_id=empresa.id,
             timestamp=datetime.datetime.utcnow(),
-            price=round(new_price_value, 2)
+            price=round(nuevo_precio, 2)
         )
         
-        db.add(new_price)
+        # Guardar en base de datos
+        db.add(precio_hoy)
         db.commit()
         
-        prices.append(new_price)
+        precios.append(precio_hoy)
 
-    # Formatear los datos para que sean compatibles con Highcharts
-    formatted_prices = [
-        [int(price.timestamp.timestamp() * 1000), price.price] for price in prices
-    ]
+    # Formato para gráfico
+    datos_formateados = []
+    for precio in precios:
+        tiempo = int(precio.timestamp.timestamp() * 1000)
+        datos_formateados.append([tiempo, precio.price])
 
-    return JSONResponse(content=formatted_prices)
+    return JSONResponse(content=datos_formateados)
 
 @router.get("/empresas")
 def get_empresas():
     db = SessionLocal()
+    
     empresas = db.query(Company).all()
-    result = [{"id": empresa.id, "symbol": empresa.symbol, "name": empresa.name} for empresa in empresas]
+    
+    lista_empresas = []
+    for empresa in empresas:
+        lista_empresas.append({
+            "id": empresa.id,
+            "symbol": empresa.symbol,
+            "name": empresa.name
+        })
+    
     db.close()
-    return result
+    
+    return lista_empresas
 
-# Endpoint para la compra de acciones - múltiples rutas para mayor accesibilidad
+# Endpoint para comprar acciones
 @router.post("/transacciones/comprar")
 @router.post("/comprar")
 async def comprar_accion(
     compra: CompraRequest,
-    token: str = Depends(oauth2_scheme),
+    user: models.User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    try:
-        # Verificar el token manualmente para ver qué pasa
-        logging.info(f"Token recibido en comprar: {token[:20]}...")
-        payload = verify_token(token)
-        if not payload:
-            logging.error("Token inválido o expirado en comprar")
-            raise HTTPException(status_code=401, detail="Token inválido o expirado")
-
-        email = payload.get("sub")
-        if not email:
-            logging.error("Token sin email en comprar")
-            raise HTTPException(status_code=401, detail="Token inválido")
-
-        logging.info(f"Buscando usuario con email: {email}")
-        user = db.query(models.User).filter(models.User.email == email).first()
-        if not user:
-            logging.error(f"Usuario no encontrado para email: {email}")
-            raise HTTPException(status_code=404, detail="Usuario no encontrado")
-
-        logging.info(f"Usuario encontrado: {user.id} - {user.email}")
-        
-        # Verificar que la compañía existe
-        logging.info(f"Verificando que la compañía existe: {compra.company_id}")
-        company = db.query(Company).filter(Company.id == compra.company_id).first()
-        if not company:
-            logging.error(f"Compañía no encontrada: {compra.company_id}")
-            raise HTTPException(status_code=404, detail=f"Compañía no encontrada con ID: {compra.company_id}")
-        
-        logging.info(f"Compañía encontrada: {company.id} - {company.name}")
-        
-        # Resto del código para la compra
-        logging.info(f"Recibida solicitud de compra: {compra}")
-        # Obtener el saldo del usuario
-        wallet = db.query(Wallet).filter(Wallet.user_id == user.id).first()
-
-        if not wallet:
-            logging.info(f"No se encontró billetera para usuario ID: {user.id}, creando una nueva.")
-            
-            # Crear billetera automáticamente si no existe
-            wallet = Wallet(user_id=user.id, balance=50000)
-            db.add(wallet)
-            db.commit()
-            db.refresh(wallet)
-            logging.info(f"Billetera creada automáticamente para usuario: {user.email} con saldo: {wallet.balance}")
-
-        # Convertir precio_per_share a Decimal para evitar errores de tipo
-        price_per_share_decimal = Decimal(str(compra.price_per_share))
-        
-        # Calcular el precio total
-        price_total = Decimal(compra.quantity) * price_per_share_decimal
-        logging.info(f"Precio total de la compra: {price_total}, Saldo disponible: {wallet.balance}")
-
-        if wallet.balance < price_total:
-            logging.error(f"Saldo insuficiente. User ID: {user.id}, Balance: {wallet.balance}, Requerido: {price_total}")
-            raise HTTPException(status_code=400, detail=f"Saldo insuficiente. Disponible: {wallet.balance}, Requerido: {price_total}")
-
-        # Crear la transacción
-        try:
-            transaction = Transaction(
-                user_id=user.id,
-                company_id=compra.company_id,
-                type=TransactionType.buy,
-                quantity=compra.quantity,
-                price_per_share=price_per_share_decimal
-            )
-            
-            # Guardar la transacción
-            db.add(transaction)
-            
-            # Restar el dinero de la billetera
-            wallet.balance = wallet.balance - price_total
-            
-            db.commit()
-            db.refresh(transaction)
-            
-            logging.info(f"Transacción exitosa para usuario ID: {user.id}, ID transacción: {transaction.id}")
-            return {
-                "mensaje": "Compra realizada con éxito", 
-                "transacción": transaction.id,
-                "detalles": {
-                    "empresa": company.name,
-                    "cantidad": compra.quantity,
-                    "precio_unitario": float(price_per_share_decimal),
-                    "precio_total": float(price_total),
-                    "saldo_restante": float(wallet.balance)
-                }
-            }
-        except Exception as transaction_error:
-            db.rollback()
-            logging.error(f"Error al crear la transacción: {str(transaction_error)}")
-            logging.error(traceback.format_exc())
-            raise HTTPException(status_code=500, detail=f"Error al crear la transacción: {str(transaction_error)}")
-
-    except HTTPException as http_exc:
-        # Re-lanzar excepciones HTTP que ya tienen un código de estado definido
-        raise http_exc
-    except Exception as e:
-        # Capturar y registrar cualquier otro error
-        db.rollback()
-        error_msg = f"Error al procesar la compra: {str(e)}"
-        stack_trace = traceback.format_exc()
-        logging.error(error_msg)
-        logging.error(stack_trace)
-        raise HTTPException(status_code=500, detail=error_msg)
+    # Buscar la empresa que quiere comprar
+    empresa = db.query(Company).filter(Company.id == compra.company_id).first()
+    if not empresa:
+        print(f"No existe la empresa con ID {compra.company_id}")
+        raise HTTPException(status_code=404, detail="No encontramos esa empresa")
+    
+    billetera = db.query(Wallet).filter(Wallet.user_id == user.id).first()
+    
+    # Si no existe billetera, crear una nueva
+    if not billetera:
+        print(f"Usuario {user.email} no tiene billetera, creando una nueva")
+        billetera = Wallet(user_id=user.id, balance=50000)
+        db.add(billetera)
+        db.commit()
+        db.refresh(billetera)
+    
+    # Convertir el precio a Decimal para evitar problemas
+    precio_por_accion = Decimal(str(compra.price_per_share))
+    
+    costo_total = precio_por_accion * Decimal(compra.quantity)
+    
+    if billetera.balance < costo_total:
+        print(f"Usuario {user.email} no tiene suficiente dinero para comprar")
+        raise HTTPException(
+            status_code=400, 
+            detail=f"No tienes suficiente dinero. Tienes {billetera.balance} pero necesitas {costo_total}"
+        )
+    
+    # Crear la transacción
+    transaccion = Transaction(
+        user_id=user.id,
+        company_id=compra.company_id,
+        type=TransactionType.buy,
+        quantity=compra.quantity,
+        price_per_share=precio_por_accion
+    )
+    
+    db.add(transaccion)
+    
+    billetera.balance = billetera.balance - costo_total
+    
+    db.commit()
+    
+    return {
+        "mensaje": f"¡Has comprado {compra.quantity} acciones de {empresa.name}!", 
+        "transacción": transaccion.id,
+        "detalles": {
+            "empresa": empresa.name,
+            "cantidad": compra.quantity,
+            "precio_por_accion": float(precio_por_accion),
+            "costo_total": float(costo_total),
+            "dinero_restante": float(billetera.balance)
+        }
+    }
 
 @router.post("/transacciones/vender")
 @router.post("/vender")
@@ -243,224 +191,192 @@ async def vender_accion(
     user: models.User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    try:
-        logging.info(f"Recibida solicitud de venta para usuario ID: {user.id}")
-        
-        # Verificar que la compañía existe
-        company = db.query(Company).filter(Company.id == venta.company_id).first()
-        if not company:
-            logging.error(f"Compañía no encontrada: {venta.company_id}")
-            raise HTTPException(status_code=404, detail=f"Compañía no encontrada con ID: {venta.company_id}")
-        
-        logging.info(f"Compañía encontrada: {company.id} - {company.name}")
-        
-        # Verificar que el usuario tiene suficientes acciones para vender
-        # Consultar las transacciones para calcular cuántas acciones tiene
-        stmt = text("""
-            SELECT 
-                COALESCE(SUM(CASE WHEN type = 'buy' THEN quantity ELSE 0 END), 0) as total_bought,
-                COALESCE(SUM(CASE WHEN type = 'sell' THEN quantity ELSE 0 END), 0) as total_sold
-            FROM 
-                transactions
-            WHERE 
-                user_id = :user_id AND company_id = :company_id
-        """)
-        
-        result = db.execute(stmt, {"user_id": user.id, "company_id": venta.company_id}).first()
-        
-        if not result:
-            logging.error(f"No se encontraron transacciones previas para user_id: {user.id}, company_id: {venta.company_id}")
-            raise HTTPException(status_code=400, detail="No tienes acciones de esta empresa para vender")
-        
-        total_bought = result[0]
-        total_sold = result[1]
-        available_shares = total_bought - total_sold
-        
-        if available_shares < venta.quantity:
-            logging.error(f"Acciones insuficientes. User ID: {user.id}, Disponibles: {available_shares}, Solicitadas: {venta.quantity}")
-            raise HTTPException(status_code=400, detail=f"Acciones insuficientes. Disponibles: {available_shares}, Solicitadas: {venta.quantity}")
-        
-        # Obtener la billetera del usuario
-        wallet = db.query(Wallet).filter(Wallet.user_id == user.id).first()
-        if not wallet:
-            logging.error(f"No se encontró billetera para usuario ID: {user.id}")
-            raise HTTPException(status_code=404, detail="Billetera no encontrada")
-        
-        price_per_share_decimal = Decimal(str(venta.price_per_share))
-        
-        # Calcular el precio total de venta
-        price_total = Decimal(venta.quantity) * price_per_share_decimal
-        
-        # Crear la transacción de venta
-        try:
-            transaction = Transaction(
-                user_id=user.id,
-                company_id=venta.company_id,
-                type=TransactionType.sell,
-                quantity=venta.quantity,
-                price_per_share=price_per_share_decimal
-            )
-            
-            db.add(transaction)
-            
-            wallet.balance = wallet.balance + price_total
-            
-            db.commit()
-            db.refresh(transaction)
-            
-            logging.info(f"Venta exitosa para usuario ID: {user.id}, ID transacción: {transaction.id}")
-            return {
-                "mensaje": "Venta realizada con éxito", 
-                "transacción": transaction.id,
-                "detalles": {
-                    "empresa": company.name,
-                    "cantidad": venta.quantity,
-                    "precio_unitario": float(price_per_share_decimal),
-                    "precio_total": float(price_total),
-                    "saldo_actualizado": float(wallet.balance)
-                }
-            }
-        except Exception as transaction_error:
-            db.rollback()
-            logging.error(f"Error al crear la transacción de venta: {str(transaction_error)}")
-            logging.error(traceback.format_exc())
-            raise HTTPException(status_code=500, detail=f"Error al crear la transacción de venta: {str(transaction_error)}")
+    empresa = db.query(Company).filter(Company.id == venta.company_id).first()
+    if not empresa:
+        print(f"No existe la empresa con ID {venta.company_id}")
+        raise HTTPException(status_code=404, detail="No encontramos esa empresa")
     
-    except HTTPException as http_exc:
-        raise http_exc
-    except Exception as e:
-        db.rollback()
-        error_msg = f"Error al procesar la venta: {str(e)}"
-        stack_trace = traceback.format_exc()
-        logging.error(error_msg)
-        logging.error(stack_trace)
-        raise HTTPException(status_code=500, detail=error_msg)
+    # Esta consulta SQL cuenta cuántas acciones compró y vendió
+    consulta = text("""
+        SELECT 
+            SUM(CASE WHEN type = 'buy' THEN quantity ELSE 0 END) as compradas,
+            SUM(CASE WHEN type = 'sell' THEN quantity ELSE 0 END) as vendidas
+        FROM 
+            transactions
+        WHERE 
+            user_id = :user_id AND company_id = :company_id
+    """)
+    
+    resultado = db.execute(consulta, {"user_id": user.id, "company_id": venta.company_id}).first()
+    
+    # Si no hay resultado, no tiene acciones
+    if not resultado or not resultado[0]:
+        print(f"El usuario {user.email} no tiene acciones de {empresa.name}")
+        raise HTTPException(status_code=400, detail="No tienes acciones de esta empresa para vender")
+    
+    acciones_compradas = resultado[0] or 0
+    acciones_vendidas = resultado[1] or 0
+    acciones_disponibles = acciones_compradas - acciones_vendidas
+    
+    # Comprobar si tiene suficientes acciones
+    if acciones_disponibles < venta.quantity:
+        print(f"El usuario quiere vender {venta.quantity} pero solo tiene {acciones_disponibles}")
+        raise HTTPException(
+            status_code=400, 
+            detail=f"No tienes suficientes acciones. Tienes {acciones_disponibles} pero quieres vender {venta.quantity}"
+        )
+    
+    billetera = db.query(Wallet).filter(Wallet.user_id == user.id).first()
+    if not billetera:
+        billetera = Wallet(user_id=user.id, balance=50000)
+        db.add(billetera)
+        db.commit()
+    
+    precio_por_accion = Decimal(str(venta.price_per_share))
+    
+    dinero_recibido = precio_por_accion * Decimal(venta.quantity)
+    
+    transaccion = Transaction(
+        user_id=user.id,
+        company_id=venta.company_id,
+        type=TransactionType.sell,
+        quantity=venta.quantity,
+        price_per_share=precio_por_accion
+    )
+    
+    db.add(transaccion)
+    
+    billetera.balance = billetera.balance + dinero_recibido
+    
+    db.commit()
+    
+    return {
+        "mensaje": f"¡Has vendido {venta.quantity} acciones de {empresa.name}! 💰", 
+        "transacción": transaccion.id,
+        "detalles": {
+            "empresa": empresa.name,
+            "cantidad": venta.quantity,
+            "precio_por_accion": float(precio_por_accion),
+            "dinero_recibido": float(dinero_recibido),
+            "dinero_total": float(billetera.balance)
+        }
+    }
 
 @router.get("/transacciones", response_model=List[Dict[str, Any]])
 async def get_user_transactions(
     user: models.User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    try:
-        # Obtener todas las transacciones del usuario
-        transactions = db.query(Transaction).filter(Transaction.user_id == user.id).order_by(desc(Transaction.timestamp)).all()
-        
-        result = []
-        for t in transactions:
-            company = db.query(Company).filter(Company.id == t.company_id).first()
-            company_name = company.name if company else "Desconocida"
-            company_symbol = company.symbol if company else ""
-            
-            total_price = float(t.price_per_share) * t.quantity
-            
-            result.append({
-                "id": t.id,
-                "company_name": company_name,
-                "company_symbol": company_symbol,
-                "type": t.type.value,
-                "quantity": t.quantity,
-                "price_per_share": float(t.price_per_share),
-                "timestamp": t.timestamp,
-                "total_price": total_price
-            })
-        
-        return result
+    # Buscar todas las transacciones del usuario
+    transacciones = db.query(Transaction).filter(
+        Transaction.user_id == user.id
+    ).order_by(desc(Transaction.timestamp)).all()
     
-    except Exception as e:
-        error_msg = f"Error al obtener transacciones: {str(e)}"
-        logging.error(error_msg)
-        logging.error(traceback.format_exc())
-        raise HTTPException(status_code=500, detail=error_msg)
+    lista_transacciones = []
+    
+    for t in transacciones:
+        empresa = db.query(Company).filter(Company.id == t.company_id).first()
+        nombre_empresa = empresa.name if empresa else "Desconocida"
+        simbolo_empresa = empresa.symbol if empresa else ""
+        
+        precio_total = float(t.price_per_share) * t.quantity
+        
+        # Añadir a la lista
+        lista_transacciones.append({
+            "id": t.id,
+            "company_name": nombre_empresa,
+            "company_symbol": simbolo_empresa,
+            "type": t.type.value,
+            "quantity": t.quantity,
+            "price_per_share": float(t.price_per_share),
+            "timestamp": t.timestamp,
+            "total_price": precio_total
+        })
+    
+    return lista_transacciones
 
 @router.get("/portfolio", response_model=List[Dict[str, Any]])
 async def get_user_portfolio(
     user: models.User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    try:
-        all_transactions = db.query(Transaction).filter(Transaction.user_id == user.id).all()
-        
-        portfolio_dict = {}
-        
-        for transaction in all_transactions:
-            company_id = transaction.company_id
-            
-            if company_id not in portfolio_dict:
-                portfolio_dict[company_id] = {
-                    "total_bought": 0,
-                    "total_sold": 0,
-                    "buy_value": 0
-                }
-            
-            # Actualizar cantidades según tipo de transacción
-            if transaction.type == TransactionType.buy:
-                portfolio_dict[company_id]["total_bought"] += transaction.quantity
-                portfolio_dict[company_id]["buy_value"] += float(transaction.price_per_share) * transaction.quantity
-            else:  
-                portfolio_dict[company_id]["total_sold"] += transaction.quantity
-        
-        result = []
-        
-        for company_id, data in portfolio_dict.items():
-            shares_owned = data["total_bought"] - data["total_sold"]
-            
-            # Solo incluir empresas donde aún tenemos acciones
-            if shares_owned <= 0:
-                continue
-            
-            # Obtener información de la empresa
-            company = db.query(Company).filter(Company.id == company_id).first()
-            if not company:
-                continue
-            
-            # Calcular precio promedio de compra
-            avg_purchase_price = 0
-            if data["total_bought"] > 0:
-                avg_purchase_price = data["buy_value"] / data["total_bought"]
-            
-            latest_price = db.query(StockPrice).filter(
-                StockPrice.company_id == company_id
-            ).order_by(desc(StockPrice.timestamp)).first()
-            
-            if latest_price:
-                today = datetime.datetime.utcnow().date()
-                if latest_price.timestamp.date() != today:
-                    variation = (random.random() - 0.5) * 0.02 
-                    new_price_value = latest_price.price * (1 + variation)
-                    
-                    new_price = StockPrice(
-                        company_id=company_id,
-                        timestamp=datetime.datetime.utcnow(),
-                        price=round(new_price_value, 2)
-                    )
-                    
-                    db.add(new_price)
-                    db.commit()
-                    
-                    latest_price = new_price
-            
-            current_price = latest_price.price if latest_price else 0
-            
-            total_value = current_price * shares_owned
-            profit_loss = (current_price - avg_purchase_price) * shares_owned
-            profit_loss_percent = ((current_price / avg_purchase_price) - 1) * 100 if avg_purchase_price > 0 else 0
-            
-            result.append({
-                "company_id": company_id,
-                "company_name": company.name,
-                "company_symbol": company.symbol,
-                "shares_owned": shares_owned,
-                "avg_purchase_price": avg_purchase_price,
-                "current_price": current_price,
-                "total_value": total_value,
-                "profit_loss": profit_loss,
-                "profit_loss_percent": profit_loss_percent
-            })
-        
-        return result
+    transacciones = db.query(Transaction).filter(Transaction.user_id == user.id).all()
     
-    except Exception as e:
-        error_msg = f"Error al obtener portafolio: {str(e)}"
-        logging.error(error_msg)
-        logging.error(traceback.format_exc())
-        raise HTTPException(status_code=500, detail=error_msg)
+    cartera = {}
+    
+    for t in transacciones:
+        empresa_id = t.company_id
+        
+        if empresa_id not in cartera:
+            cartera[empresa_id] = {
+                "acciones_compradas": 0,
+                "acciones_vendidas": 0,
+                "valor_de_compra": 0
+            }
+        
+        if t.type == TransactionType.buy:
+            cartera[empresa_id]["acciones_compradas"] += t.quantity
+            cartera[empresa_id]["valor_de_compra"] += float(t.price_per_share) * t.quantity
+        else:  
+            cartera[empresa_id]["acciones_vendidas"] += t.quantity
+    
+    resultado = []
+    
+    for empresa_id, datos in cartera.items():
+        acciones_actuales = datos["acciones_compradas"] - datos["acciones_vendidas"]
+        
+        if acciones_actuales <= 0:
+            continue
+        
+        empresa = db.query(Company).filter(Company.id == empresa_id).first()
+        if not empresa:
+            continue
+        
+        precio_medio_compra = 0
+        if datos["acciones_compradas"] > 0:
+            precio_medio_compra = datos["valor_de_compra"] / datos["acciones_compradas"]
+        
+        ultimo_precio_obj = db.query(StockPrice).filter(
+            StockPrice.company_id == empresa_id
+        ).order_by(desc(StockPrice.timestamp)).first()
+        
+        if ultimo_precio_obj:
+            hoy = datetime.datetime.utcnow().date()
+            if ultimo_precio_obj.timestamp.date() != hoy:
+                variacion = random.uniform(-0.02, 0.02)
+                nuevo_valor = ultimo_precio_obj.price * (1 + variacion)
+                
+                nuevo_precio = StockPrice(
+                    company_id=empresa_id,
+                    timestamp=datetime.datetime.utcnow(),
+                    price=round(nuevo_valor, 2)
+                )
+                
+                db.add(nuevo_precio)
+                db.commit()
+                
+                ultimo_precio_obj = nuevo_precio
+        
+        precio_actual = ultimo_precio_obj.price if ultimo_precio_obj else 0
+        
+        valor_total = precio_actual * acciones_actuales
+        ganancia_perdida = (precio_actual - precio_medio_compra) * acciones_actuales
+        
+        if precio_medio_compra > 0:
+            porcentaje = ((precio_actual / precio_medio_compra) - 1) * 100
+        else:
+            porcentaje = 0
+        
+        resultado.append({
+            "company_id": empresa_id,
+            "company_name": empresa.name,
+            "company_symbol": empresa.symbol,
+            "shares_owned": acciones_actuales,
+            "avg_purchase_price": precio_medio_compra,
+            "current_price": precio_actual,
+            "total_value": valor_total,
+            "profit_loss": ganancia_perdida,
+            "profit_loss_percent": porcentaje
+        })
+    
+    return resultado

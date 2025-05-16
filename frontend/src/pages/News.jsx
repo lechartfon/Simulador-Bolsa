@@ -18,7 +18,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import AddIcon from '@mui/icons-material/Add';
 import { getAllNews, deleteNews } from '../utils/newsService';
 import NewsCard from '../components/News/NewsCard';
-import UltraSimpleNewsForm from '../components/News/UltraSimpleNewsForm';
+import FormularioNoticias from '../components/News/NewsForm';
 import DeleteConfirmationDialog from '../components/News/DeleteConfirmationDialog';
 import Layout from '../components/Layout/Layout';
 
@@ -121,9 +121,8 @@ const News = () => {
     news.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
     news.content.toLowerCase().includes(searchTerm.toLowerCase())
   );
-
   return (
-    <Layout>
+    <>
       <Container maxWidth="xl" sx={{ mt: 4, mb: 6 }}>
         <Box sx={{ mb: 4 }}>
           <Typography variant="h4" component="h1" gutterBottom>
@@ -222,25 +221,22 @@ const News = () => {
           >
             <AddIcon />
           </Fab>
-        )}
-      </Container>
+        )}      </Container>
 
-      {/* Usar el formulario ultra simplificado */}
-      <UltraSimpleNewsForm
+      <FormularioNoticias
         open={isFormOpen}
         onClose={handleCloseForm}
         initialData={editingNews}
         onSuccess={handleFormSuccess}
       />
 
-      {/* Diálogo de confirmación para eliminar */}
       <DeleteConfirmationDialog
         open={deleteDialogOpen}
         onClose={() => setDeleteDialogOpen(false)}
         onConfirm={handleConfirmDelete}
         isDeleting={isDeleting}
       />
-    </Layout>
+    </>
   );
 };
 

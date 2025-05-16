@@ -9,7 +9,6 @@ import {
   Typography, 
   Box, 
   Paper, 
-  Grid,
   Alert,
   CircularProgress
 } from '@mui/material';
@@ -21,51 +20,43 @@ const TransaccionesPage = () => {
   const [error, setError] = useState('');
   const chartRef = useRef(null);
   const navigate = useNavigate();
-
-  // Crear una instancia de axios con autorización
-  const getAuthAxios = () => {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      navigate('/login');
-      return null;
-    }
-    
-    return axios.create({
-      baseURL: 'http://localhost:8000',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      }
-    });
-  };
-
-  // Función para cargar el saldo desde la API
   const cargarSaldo = async () => {
     setLoading(true);
     setError('');
     
     try {
-      const authAxios = getAuthAxios();
-      if (!authAxios) return;
+      const token = localStorage.getItem('token');
+      if (!token) {
+        navigate('/login');
+        return;
+      }
       
-      const response = await authAxios.get('/wallet');
-      if (response.data && typeof response.data.balance === 'number') {
+      // Hacer petición al servidor
+      const response = await axios.get('http://localhost:8000/wallet', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      // Guardar el saldo si es correcto
+      if (response.data && response.data.balance) {
         setDineroDisponible(response.data.balance);
       } else {
-        console.error("Formato de respuesta inesperado:", response.data);
-        setError('No se pudo cargar el saldo correctamente');
+        setError('No se pudo cargar el saldo');
       }
     } catch (error) {
       console.error("Error al cargar el saldo:", error);
-      if (error.response?.status === 401) {
+      
+      if (error.response && error.response.status === 401) {
+        // Si hay error de autenticación, redirigir al login
         localStorage.removeItem('token');
         navigate('/login');
       } else {
-        setError('Error al cargar el saldo. Por favor, recarga la página.');
+        setError('Error al cargar el saldo');
       }
-    } finally {
-      setLoading(false);
     }
+    
+    setLoading(false);
   };
 
   useEffect(() => {
@@ -75,20 +66,21 @@ const TransaccionesPage = () => {
       return;
     }
     
-    // Cargar el saldo al iniciar
     cargarSaldo();
   }, [navigate]);
 
   const handleEmpresaSeleccionada = (empresa) => {
     setEmpresaSeleccionada(empresa);
   };
-
-  const handleCompra = async (cantidad, precioTotal) => {
-    // Actualizar el saldo localmente de inmediato para mejor UX
+  const handleCompra = async (precioTotal) => {
     const nuevoSaldo = dineroDisponible - precioTotal;
     setDineroDisponible(Math.round(nuevoSaldo * 100) / 100);
     
-    // Recargar el saldo desde la API para asegurar que está sincronizado
+    // Actualizar el saldo en el header
+    if (window.updateHeaderWallet) {
+      window.updateHeaderWallet();
+    }
+    
     await cargarSaldo();
   };
 

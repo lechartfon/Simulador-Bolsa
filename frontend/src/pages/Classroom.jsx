@@ -5,7 +5,7 @@ import '../App.css';
 import ClassroomList from '../components/Classroom/ClassroomList';
 import CreateClassroom from '../components/Classroom/CreateClassroom';
 import JoinClassroom from '../components/Classroom/JoinClassroom';
-import ClassroomLeaderboard from '../components/Classroom/ClassroomLeaderboard';
+import TablaClasificacion from '../components/Classroom/ClassroomLeaderboard';
 import { 
   Container, 
   Typography, 
@@ -56,19 +56,16 @@ const Classroom = () => {
     }
   };
 
-  // Seleccionar una clase para ver su tabla de clasificación
   const handleSelectClassroom = (classroom) => {
     setSelectedClassroom(classroom);
   };
 
-  // Manejar la creación exitosa de una clase
   const handleClassroomCreated = () => {
     fetchMyClassrooms();
     setMensaje('Clase creada con éxito!');
     setOpenSnackbar(true);
   };
 
-  // Manejar la unión exitosa a una clase
   const handleClassroomJoined = () => {
     fetchMyClassrooms();
     setMensaje('Te has unido a la clase con éxito!');
@@ -100,8 +97,7 @@ const Classroom = () => {
           >
             {mensaje}
           </Alert>
-        </Snackbar>
-
+        </Snackbar>        
         <Grid container spacing={3}>
           <Grid item xs={12} md={4}>
             <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column', height: '100%',  width: '100vh' }}>
@@ -117,7 +113,7 @@ const Classroom = () => {
         </Grid>
 
         <Grid container spacing={3} sx={{ mt: 2 }}>
-          <Grid item xs={12} md={4}>
+          <Grid item xs={12} md={5}>
             <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column', height: '100%' }}>
               <ClassroomList 
                 classrooms={classrooms} 
@@ -127,10 +123,10 @@ const Classroom = () => {
             </Paper>
           </Grid>
           
-          <Grid item xs={12} md={8}>
-            <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column', height: '100%', width: '63vh' }}>
+          <Grid item xs={12} md={7}>            
+          <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column', height: '100%' }}>
               {selectedClassroom ? (
-                <ClassroomLeaderboard classroom={selectedClassroom} />
+                <TablaClasificacion classroom={selectedClassroom} />
               ) : (
                 <Box sx={{ 
                   display: 'flex', 

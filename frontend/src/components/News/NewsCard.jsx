@@ -46,7 +46,7 @@ const NewsCard = ({ news, isAdmin, onEdit, onDelete }) => {
   return (
     <StyledCard elevation={3}>
       <StyledMedia
-        image={news.image_url || 'https://via.placeholder.com/300x200?text=Sin+Imagen'}
+        image={news.image_url}
         title={news.title}
       />
       <StyledContent>

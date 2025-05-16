@@ -2,14 +2,9 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { 
   TextField, 
-  List, 
   ListItem, 
   ListItemText, 
-  Paper, 
   Box, 
-  Typography,
-  ListItemButton,
-  Divider,
   Autocomplete
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
@@ -26,7 +21,12 @@ const BuscadorAcciones = ({ onSelectEmpresa }) => {
         const fetchEmpresas = async () => {
             setLoading(true);
             try {
-                const response = await axios.get('empresas');
+                const token = localStorage.getItem('token');
+                const response = await axios.get('http://localhost:8000/empresas', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
                 console.log('Empresas recibidas del backend:', response.data);
                 setEmpresas(response.data);
             } catch (error) {
@@ -38,23 +38,6 @@ const BuscadorAcciones = ({ onSelectEmpresa }) => {
 
         fetchEmpresas();
     }, []);
-
-    const handleChange = (e) => {
-        const valor = e.target.value;
-        setBusqueda(valor);
-
-        if (valor.length === 0) {
-            setResultados([]);
-            return;
-        }
-
-        const filtrados = empresas.filter(empresa =>
-            empresa.name.toLowerCase().includes(valor.toLowerCase()) ||
-            empresa.symbol.toLowerCase().includes(valor.toLowerCase())
-        );
-
-        setResultados(filtrados);
-    };
 
     const handleSeleccion = (empresa) => {
         console.log('Empresa seleccionada:', empresa);
@@ -87,7 +70,7 @@ const BuscadorAcciones = ({ onSelectEmpresa }) => {
                     />
                 )}
                 renderOption={(props, option) => (
-                    <ListItem {...props} key={option.id} onClick={() => handleSeleccion(option)}>
+                    <ListItem {...props} key={option.id}>
                         <BusinessIcon sx={{ mr: 2, color: 'primary.main' }} />
                         <ListItemText
                             primary={option.name}

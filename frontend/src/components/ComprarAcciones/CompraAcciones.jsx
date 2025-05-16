@@ -11,7 +11,6 @@ import {
   CardContent,
   CardActions,
   InputAdornment,
-  Chip,
   Dialog,
   DialogTitle,
   DialogContent,
@@ -21,14 +20,7 @@ import {
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 
-/**
- * Componente para comprar acciones de una empresa
- * @param {Object} props
- * @param {Object} props.empresa - Datos de la empresa seleccionada
- * @param {Object} props.chartRef - Referencia al gráfico de la empresa
- * @param {number} props.dineroDisponible - Saldo disponible del usuario
- * @param {Function} props.onCompraExitosa - Función a ejecutar tras una compra exitosa
- */
+// Componente para comprar acciones
 const CompraAcciones = ({ empresa, chartRef, dineroDisponible, onCompraExitosa }) => {
   const [cantidad, setCantidad] = useState(1);
   const [mensaje, setMensaje] = useState('');
@@ -98,18 +90,17 @@ const CompraAcciones = ({ empresa, chartRef, dineroDisponible, onCompraExitosa }
   useEffect(() => {
     const obtenerPrecio = async () => {
       if (empresa && empresa.name) {
-        const storedPrice = window.chartData && window.chartData[`${empresa.name}_lastPrice`];
-        if (typeof storedPrice === 'number') {
-          console.log("Precio obtenido del almacén global:", storedPrice);
-          setPrecioActual(storedPrice);
+        // Intento obtener el precio de la variable global
+        if (window.chartData && window.chartData[`${empresa.name}_lastPrice`]) {
+          setPrecioActual(window.chartData[`${empresa.name}_lastPrice`]);
           return true;
         }
       }
       
+      // Si tengo referencia al gráfico, intento sacar el precio de ahí
       if (chartRef && chartRef.current) {
         try {
           if (chartRef.current.lastPrice) {
-            console.log("Precio obtenido de chartRef.lastPrice:", chartRef.current.lastPrice);
             setPrecioActual(chartRef.current.lastPrice);
             return true;
           }
@@ -119,8 +110,7 @@ const CompraAcciones = ({ empresa, chartRef, dineroDisponible, onCompraExitosa }
             
             if (series.points && series.points.length > 0) {
               const lastPoint = series.points[series.points.length - 1];
-              if (lastPoint && typeof lastPoint.y === 'number') {
-                console.log("Precio obtenido de series.points:", lastPoint.y);
+              if (lastPoint && lastPoint.y) {
                 setPrecioActual(lastPoint.y);
                 return true;
               }
@@ -128,15 +118,14 @@ const CompraAcciones = ({ empresa, chartRef, dineroDisponible, onCompraExitosa }
             
             if (series.data && series.data.length > 0) {
               const lastPoint = series.data[series.data.length - 1];
-              if (lastPoint && typeof lastPoint.y === 'number') {
-                console.log("Precio obtenido de series.data:", lastPoint.y);
+              if (lastPoint && lastPoint.y) {
                 setPrecioActual(lastPoint.y);
                 return true;
               }
             }
           }
         } catch (error) {
-          console.error("Error al acceder al gráfico:", error);
+          console.error("Error con el gráfico:", error);
         }
       }
       
@@ -210,6 +199,7 @@ const CompraAcciones = ({ empresa, chartRef, dineroDisponible, onCompraExitosa }
     setOpenConfirmDialog(false);
   };
 
+  // Función para comprar acciones
   const handleCompra = async () => {
     handleCloseConfirmDialog();
     setIsLoading(true);
@@ -218,67 +208,54 @@ const CompraAcciones = ({ empresa, chartRef, dineroDisponible, onCompraExitosa }
       const token = localStorage.getItem('token');
       
       if (!token) {
-        setMensaje('Error: No hay sesión iniciada. Por favor, inicia sesión nuevamente.');
+        setMensaje('Error: No hay sesión iniciada');
         setMensajeType('error');
         setIsLoading(false);
         return;
       }
 
-      const authAxios = axios.create({
-        baseURL: 'http://localhost:8000',
+      // Creo el objeto para enviar la compra
+      const data = {
+        company_id: empresaId,
+        quantity: cantidad,
+        price_per_share: parseFloat(precioActual.toFixed(2))
+      };
+
+      // Hago la petición
+      const response = await axios.post('http://localhost:8000/comprar', data, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         }
       });
 
-      const precioFormateado = Number(precioActual).toFixed(2);
-
-      const data = {
-        company_id: empresaId,
-        quantity: cantidad,
-        price_per_share: parseFloat(precioFormateado)
-      };
-
-      const response = await authAxios.post('/comprar', data);
-
       if (response.status === 200) {
-        const total = Math.round(precioActual * cantidad * 100) / 100;
+        const total = precioActual * cantidad;
         
-        // Update the header wallet balance
         if (window.updateHeaderWallet) {
           window.updateHeaderWallet();
         }
         
         onCompraExitosa(cantidad, total);
-        setMensaje(`Compra realizada: ${cantidad} x ${empresa.name} a ${precioFormateado}€`);
+        
+        setMensaje(`Compra realizada: ${cantidad} acciones de ${empresa.name}`);
         setMensajeType('success');
       } else {
         setMensaje(`Error: ${response.statusText}`);
         setMensajeType('error');
       }
-      
-      setIsLoading(false);
     } catch (error) {
-      setIsLoading(false);
       console.error("Error en la compra:", error);
       
-      if (error.response) {
-        if (error.response.status === 401) {
-          localStorage.removeItem('token');
-          setMensaje('Error: Sesión expirada o inválida. Por favor, inicia sesión nuevamente.');
-          setMensajeType('error');
-        } else if (error.response.status === 404) {
-          setMensaje('Error: El endpoint de compra no está disponible. Contacte al administrador.');
-          setMensajeType('error');
-        } else {
-          setMensaje(`Error: ${error.response.data.detail || error.response.statusText}`);
-          setMensajeType('error');
-        }
+      if (error.response && error.response.status === 401) {
+        localStorage.removeItem('token');
+        setMensaje('Error: Sesión expirada');
       } else {
-        setMensaje('Error al guardar la compra en la base de datos.');
-        setMensajeType('error');
+        setMensaje('Error al hacer la compra');
       }
+      setMensajeType('error');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -289,9 +266,9 @@ const CompraAcciones = ({ empresa, chartRef, dineroDisponible, onCompraExitosa }
 
   return (
     <>
-      <Card variant="outlined">
+      <Card>
         <CardContent>
-          <Typography variant="h5" component="div" gutterBottom>
+          <Typography variant="h5" gutterBottom>
             Comprar acciones
           </Typography>
           {empresa && (
@@ -300,28 +277,17 @@ const CompraAcciones = ({ empresa, chartRef, dineroDisponible, onCompraExitosa }
             </Typography>
           )}
           
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
+          <Box sx={{ mb: 2 }}>
             <Typography variant="body1">
-              Dinero disponible:
+              Dinero disponible: {dineroDisponible ? `${dineroDisponible.toFixed(2)}€` : "Cargando..."}
             </Typography>
-            <Chip 
-              icon={<AttachMoneyIcon />} 
-              label={`${dineroDisponible.toFixed(2)}€`} 
-              color="primary"
-              variant="outlined"
-            />
           </Box>
           
           {precioActual && (
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
+            <Box sx={{ mb: 2 }}>
               <Typography variant="body1">
-                Precio actual:
+                Precio actual: {precioActual.toFixed(2)}€
               </Typography>
-              <Chip 
-                label={`${precioActual.toFixed(2)}€`} 
-                color="secondary"
-                variant="outlined"
-              />
             </Box>
           )}
           

@@ -13,16 +13,17 @@ router = APIRouter(
 )
 
 class NewsBase(BaseModel):
-    title: str
-    content: str
-    url: str
-    image_url: Optional[str] = None
+    title: str  
+    content: str  
+    url: str  
+    image_url: Optional[str] = None 
 
 class NewsCreate(NewsBase):
-    pass
+    pass 
 
-class NewsUpdate(NewsBase):
-    title: Optional[str] = None
+
+class NewsUpdate(BaseModel):
+    title: Optional[str] = None  
     content: Optional[str] = None
     url: Optional[str] = None
     image_url: Optional[str] = None
@@ -34,7 +35,7 @@ class NewsResponse(NewsBase):
     created_by: int
 
     class Config:
-        from_attributes = True
+        from_attributes = True 
 
 @router.get("/", response_model=List[NewsResponse])
 def get_all_news(
@@ -42,15 +43,21 @@ def get_all_news(
     limit: int = 100,
     db: Session = Depends(get_db)
 ):
-    news = db.query(News).offset(skip).limit(limit).all()
-    return news
+    
+    noticias = db.query(News).offset(skip).limit(limit).all()
+    return noticias
 
 @router.get("/{news_id}", response_model=NewsResponse)
 def get_news(news_id: int, db: Session = Depends(get_db)):
-    news = db.query(News).filter(News.id == news_id).first()
-    if news is None:
-        raise HTTPException(status_code=404, detail="News not found")
-    return news
+    
+    noticia = db.query(News).filter(News.id == news_id).first()
+    
+   
+    if noticia is None:
+        print(f"No se encontró noticia con ID: {news_id}")
+        raise HTTPException(status_code=404, detail="No encontramos esa noticia")
+    
+    return noticia
 
 @router.post("/", response_model=NewsResponse, status_code=status.HTTP_201_CREATED)
 def create_news(
@@ -58,17 +65,24 @@ def create_news(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_admin_user)
 ):
-    db_news = News(
+    print(f"Creando noticia: {news.title}")
+    
+    # Crear objeto de noticia
+    nueva_noticia = News(
         title=news.title,
         content=news.content,
         url=news.url,
         image_url=news.image_url,
-        created_by=current_user.id
+        created_by=current_user.id  
     )
-    db.add(db_news)
+    
+    # Guardar en la base de datos
+    db.add(nueva_noticia)
     db.commit()
-    db.refresh(db_news)
-    return db_news
+    db.refresh(nueva_noticia)
+    
+    print(f"Noticia creada con ID: {nueva_noticia.id}")
+    return nueva_noticia
 
 @router.put("/{news_id}", response_model=NewsResponse)
 def update_news(
@@ -77,26 +91,42 @@ def update_news(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_admin_user)
 ):
-    db_news = db.query(News).filter(News.id == news_id).first()
-    if db_news is None:
-        raise HTTPException(status_code=404, detail="News not found")
+    # Buscar la noticia que queremos actualizar
+    noticia = db.query(News).filter(News.id == news_id).first()
     
+    # Comprobar que existe
+    if noticia is None:
+        print(f"No se encontró la noticia con ID {news_id}")
+        raise HTTPException(status_code=404, detail="No encontramos esa noticia")
+    
+    # Actualizar los campos
     try:
+        
         if hasattr(news_update, "model_dump"):
-            update_data = news_update.model_dump(exclude_unset=True)
+            datos = news_update.model_dump(exclude_unset=True)
         else:
-            update_data = news_update.dict(exclude_unset=True)
+            datos = news_update.dict(exclude_unset=True)
         
-        for field, value in update_data.items():
-            setattr(db_news, field, value)
+       
+        for campo, valor in datos.items():
+            
+            if valor is not None:
+                setattr(noticia, campo, valor)
         
-        db_news.updated_at = datetime.utcnow()
+        
+        noticia.updated_at = datetime.utcnow()
+        
         
         db.commit()
-        db.refresh(db_news)
-        return db_news
+        db.refresh(noticia)
+        
+        print(f"Noticia {news_id} actualizada correctamente")
+        return noticia
+        
     except Exception as e:
+        
         db.rollback()
+        print(f"Error al actualizar la noticia: {e}")
         raise HTTPException(
             status_code=500,
             detail=f"Error al actualizar la noticia: {str(e)}"
@@ -108,10 +138,15 @@ def delete_news(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_admin_user)
 ):
-    db_news = db.query(News).filter(News.id == news_id).first()
-    if db_news is None:
-        raise HTTPException(status_code=404, detail="News not found")
+    noticia = db.query(News).filter(News.id == news_id).first()
     
-    db.delete(db_news)
+    if noticia is None:
+        print(f"No se pudo borrar: La noticia con ID {news_id} no existe")
+        raise HTTPException(status_code=404, detail="No encontramos esa noticia")
+    
+    print(f"Eliminando noticia: {noticia.title} (ID: {news_id})")
+    db.delete(noticia)
     db.commit()
-    return None 
+    
+    print(f"Noticia eliminada correctamente")
+    return None

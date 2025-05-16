@@ -4,7 +4,6 @@ import {
   AppBar, 
   Toolbar, 
   Typography, 
-  Button, 
   IconButton, 
   Drawer, 
   List, 
@@ -26,10 +25,8 @@ import DashboardIcon from '@mui/icons-material/Dashboard';
 import MenuIcon from '@mui/icons-material/Menu';
 import axios from 'axios';
 
-// Drawer width
 const drawerWidth = 240;
 
-// Create a global reference to update the wallet balance
 window.updateHeaderWallet = () => {
   if (window.fetchWalletBalance) {
     window.fetchWalletBalance();
@@ -45,8 +42,8 @@ const Layout = ({ children }) => {
   const [pageTitle, setPageTitle] = useState('');
   const [walletBalance, setWalletBalance] = useState(null);
 
-  // Handle navigation items
-  const navigationItems = [
+  // Links del menú
+  const menuItems = [
     { name: 'Dashboard', path: '/dashboard', icon: <DashboardIcon /> },
     { name: 'Portfolio', path: '/portfolio', icon: <ShowChartIcon /> },
     { name: 'Transacciones', path: '/transacciones', icon: <AccountBalanceWalletIcon /> },
@@ -54,9 +51,9 @@ const Layout = ({ children }) => {
     { name: 'Noticias', path: '/news', icon: <NewspaperIcon /> },
   ];
 
-  // Update page title based on current path
+  // Actualizar título según la página actual
   useEffect(() => {
-    const currentPage = navigationItems.find(item => item.path === location.pathname);
+    const currentPage = menuItems.find(item => item.path === location.pathname);
     if (currentPage) {
       setPageTitle(currentPage.name);
     } else {
@@ -64,7 +61,7 @@ const Layout = ({ children }) => {
     }
   }, [location.pathname]);
   
-  // Fetch wallet balance
+  // Obtener saldo
   const fetchWalletBalance = async () => {
     try {
       const token = localStorage.getItem('token');
@@ -72,20 +69,18 @@ const Layout = ({ children }) => {
       
       const response = await axios.get('http://localhost:8000/wallet', {
         headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
+          'Authorization': `Bearer ${token}`
         }
       });
       
-      if (response.data && typeof response.data.balance === 'number') {
+      if (response.data && response.data.balance) {
         setWalletBalance(response.data.balance);
       }
     } catch (error) {
-      console.error('Error fetching wallet balance:', error);
+      console.error('Error al cargar saldo:', error);
     }
   };
 
-  // Make the fetch function available globally
   useEffect(() => {
     window.fetchWalletBalance = fetchWalletBalance;
     fetchWalletBalance();
@@ -104,14 +99,12 @@ const Layout = ({ children }) => {
     localStorage.removeItem('user');
     navigate('/login');
   };
-
-  // Drawer content
   const drawer = (
     <Box sx={{ 
       height: '100%', 
       display: 'flex', 
       flexDirection: 'column',
-      bgcolor: theme.palette.primary.main,
+      bgcolor: 'primary.main',
       color: 'white'
     }}>
       <Box sx={{ 
@@ -119,32 +112,28 @@ const Layout = ({ children }) => {
         display: 'flex', 
         alignItems: 'center', 
         justifyContent: 'center',
-        borderBottom: `1px solid ${theme.palette.primary.light}`
+        borderBottom: '1px solid rgba(255,255,255,0.2)'
       }}>
-        <ShowChartIcon sx={{ mr: 1, fontSize: 28 }} />
-        <Typography variant="h6" component="div">
+        <ShowChartIcon sx={{ mr: 1 }} />
+        <Typography variant="h6">
           Simulador Bolsa
         </Typography>
       </Box>
       
-      <List sx={{ flexGrow: 1, pt: 2 }}>
-        {navigationItems.map((item) => (
+      <List sx={{ flexGrow: 1, pt: 1 }}>
+        {menuItems.map((item) => (
           <ListItem 
             button 
             key={item.name} 
             component={Link} 
             to={item.path}
             sx={{ 
-              py: 1.5,
               color: 'white',
               bgcolor: location.pathname === item.path ? 'rgba(255, 255, 255, 0.1)' : 'transparent',
-              '&:hover': {
-                bgcolor: 'rgba(255, 255, 255, 0.1)',
-              }
             }}
             onClick={isMobile ? handleDrawerToggle : undefined}
           >
-            <ListItemIcon sx={{ color: 'white', minWidth: 40 }}>
+            <ListItemIcon sx={{ color: 'white' }}>
               {item.icon}
             </ListItemIcon>
             <ListItemText primary={item.name} />
@@ -152,21 +141,15 @@ const Layout = ({ children }) => {
         ))}
       </List>
       
-      <Divider sx={{ bgcolor: theme.palette.primary.light }} />
+      <Divider />
       
       <List>
         <ListItem 
           button 
           onClick={handleLogout}
-          sx={{ 
-            py: 1.5, 
-            color: 'white',
-            '&:hover': {
-              bgcolor: 'rgba(255, 255, 255, 0.1)',
-            }
-          }}
+          sx={{ color: 'white' }}
         >
-          <ListItemIcon sx={{ color: 'white', minWidth: 40 }}>
+          <ListItemIcon sx={{ color: 'white' }}>
             <ExitToAppIcon />
           </ListItemIcon>
           <ListItemText primary="Cerrar Sesión" />
@@ -177,7 +160,6 @@ const Layout = ({ children }) => {
 
   return (
     <Box sx={{ display: 'flex', minHeight: '100vh' }}>
-      {/* App bar */}
       <AppBar 
         position="fixed" 
         sx={{ 
@@ -201,16 +183,15 @@ const Layout = ({ children }) => {
               {pageTitle}
             </Typography>
           </Box>
-          
-          {/* Wallet balance display */}
           {walletBalance !== null && (
             <Chip
               icon={<AccountBalanceWalletIcon />}
-              label={`Saldo: ${walletBalance.toFixed(2)} €`}
+              label={isMobile ? `${walletBalance.toFixed(0)}€` : `Saldo: ${walletBalance.toFixed(2)}€`}
               variant="filled"
               sx={{ 
                 color: 'white', 
                 fontWeight: 'bold',
+                fontSize: { xs: '0.75rem', sm: '0.875rem' },
                 '& .MuiChip-icon': { color: 'white' }
               }}
             />
@@ -218,18 +199,16 @@ const Layout = ({ children }) => {
         </Toolbar>
       </AppBar>
 
-      {/* Sidebar */}
       <Box
         component="nav"
         sx={{ width: { md: drawerWidth }, flexShrink: { md: 0 } }}
       >
-        {/* Mobile drawer */}
         <Drawer
           variant="temporary"
           open={mobileOpen}
           onClose={handleDrawerToggle}
           ModalProps={{
-            keepMounted: true, // Better mobile performance
+            keepMounted: true, 
           }}
           sx={{
             display: { xs: 'block', md: 'none' },
@@ -243,7 +222,6 @@ const Layout = ({ children }) => {
           {drawer}
         </Drawer>
         
-        {/* Desktop drawer */}
         <Drawer
           variant="permanent"
           sx={{
@@ -259,16 +237,15 @@ const Layout = ({ children }) => {
         >
           {drawer}
         </Drawer>
-      </Box>
-
-      {/* Main content */}
+      </Box>      
       <Box 
         component="main" 
         sx={{ 
           flexGrow: 1, 
           width: { md: `calc(100% - ${drawerWidth}px)` },
-          p: 3,
-          pt: { xs: 10, sm: 8 }, // Add padding to account for the app bar
+          p: 2,
+          pt: 10,
+          overflow: 'auto'
         }}
       >
         {children}
