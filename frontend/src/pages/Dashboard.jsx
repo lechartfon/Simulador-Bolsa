@@ -179,20 +179,34 @@ const Dashboard = () => {
             </Typography>
             <Grid container spacing={3} justifyContent="center">
               {/* Valor Total de la Cuenta */}              
-              <Grid item xs={12} sm={6}>
-                <Card>
-                  <CardContent>
-                    <Typography variant="h6" color="text.secondary" gutterBottom>
+              <Grid item xs={12} sm={6} sx={{ display: 'flex', justifyContent: 'center' }}>
+                <Card 
+                  elevation={2} 
+                  sx={{ 
+                    height: '100%',
+                    borderRadius: 2,
+                    transition: 'transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out',
+                    '&:hover': {
+                      transform: 'translateY(-5px)',
+                      boxShadow: '0 8px 16px rgba(0,0,0,0.1)'
+                    },
+                    display: 'flex',
+                    flexDirection: 'column',
+                    width: { xs: '100%', sm: '90%', md: '400px' }
+                  }}
+                >
+                  <CardContent sx={{ p: 3, flexGrow: 1 }}>
+                    <Typography variant="h6" color="text.secondary" gutterBottom sx={{ textAlign: { xs: 'center', md: 'left' } }}>
                       Valor Total de la Cuenta
                     </Typography>
                     <Typography variant="h3" align="center">
                       {formatCurrency(accountSummary.valorTotal)}
                     </Typography>
-                    <Box sx={{ display: 'flex', alignItems: 'center', mt: 1, justifyContent: 'center' }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', mt: 2, justifyContent: 'center' }}>
                       {accountSummary.gananciasPerdidasTotales >= 0 ? (
-                        <ArrowUpwardIcon color="success" />
+                        <ArrowUpwardIcon color="success" sx={{ mr: 1 }} />
                       ) : (
-                        <ArrowDownwardIcon color="error" />
+                        <ArrowDownwardIcon color="error" sx={{ mr: 1 }} />
                       )}
                       <Typography
                         variant="body1"
@@ -206,18 +220,34 @@ const Dashboard = () => {
               </Grid>
 
               {/* Dinero Disponible */}              
-              <Grid item xs={12} sm={6}>
-                <Card>
-                  <CardContent>
-                    <Typography variant="h6" color="text.secondary" gutterBottom>
+              <Grid item xs={12} sm={6} sx={{ display: 'flex', justifyContent: 'center' }}>
+                <Card 
+                  elevation={2} 
+                  sx={{ 
+                    height: '100%',
+                    borderRadius: 2,
+                    transition: 'transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out',
+                    '&:hover': {
+                      transform: 'translateY(-5px)',
+                      boxShadow: '0 8px 16px rgba(0,0,0,0.1)'
+                    },
+                    display: 'flex',
+                    flexDirection: 'column',
+                    width: { xs: '100%', sm: '90%', md: '400px' }
+                  }}
+                >
+                  <CardContent sx={{ p: 3, flexGrow: 1 }}>
+                    <Typography variant="h6" color="text.secondary" gutterBottom sx={{ textAlign: { xs: 'center', md: 'left' } }}>
                       Dinero Disponible
                     </Typography>
                     <Typography variant="h3" align="center">
                       {formatCurrency(accountSummary.balance)}
                     </Typography>
-                    <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }} align="center">
-                      Valor de Acciones: {formatCurrency(accountSummary.valorAcciones)}
-                    </Typography>
+                    <Box sx={{ mt: 2 }}>
+                      <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center' }}>
+                        Valor de Acciones: {formatCurrency(accountSummary.valorAcciones)}
+                      </Typography>
+                    </Box>
                   </CardContent>
                 </Card>
               </Grid>
@@ -391,4 +421,4 @@ const Dashboard = () => {
   );
 };
 
-export default Dashboard; 
+export default Dashboard;

@@ -1,7 +1,7 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import Login from './components/Login/LoginForm';
-import Register from './components/Register/RegisterForm';
+import Register from './pages/Register';
 import Transacciones from './pages/Transacciones';
 import Classroom from './pages/Classroom';
 import Portfolio from './pages/Portfolio';

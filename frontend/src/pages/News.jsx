@@ -99,17 +99,20 @@ const News = () => {
     setNewsToDelete(newsId);
     setDeleteDialogOpen(true);
   };
-
   const handleConfirmDelete = async () => {
     if (!newsToDelete) return;
     
     setIsDeleting(true);
+    setError(null); 
+    
     try {
       await deleteNews(newsToDelete);
-      await fetchNews();
+     
+      setNewsItems(prevItems => prevItems.filter(item => item.id !== newsToDelete));
     } catch (err) {
       console.error('Error deleting news:', err);
       setError('Error al eliminar la noticia. Por favor intenta nuevamente.');
+      await fetchNews();
     } finally {
       setIsDeleting(false);
       setDeleteDialogOpen(false);

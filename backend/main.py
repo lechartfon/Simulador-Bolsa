@@ -7,13 +7,13 @@ import random
 from sqlalchemy.orm import Session
 
 # Importaciones internas
-from backend.auth import router as auth_router
-from backend.routes.stocks import router as stocks_router
-from backend.routes.classroom import router as classroom_router  
-from backend.routes.news import router as news_router
-from backend.models import Base, Company, StockPrice, News, User
-from backend.database import engine, SessionLocal, get_db
-from backend.auth import get_current_user
+from auth import router as auth_router
+from routes.stocks import router as stocks_router
+from routes.classroom import router as classroom_router  
+from routes.news import router as news_router
+from models import Base, Company, StockPrice, News, User
+from database import engine, SessionLocal, get_db
+from auth import get_current_user
 
 # Configuración básica para mostrar mensajes
 print("Iniciando aplicación del simulador de bolsa...")

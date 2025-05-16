@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from ..database import get_db
-from ..models import User, Classroom, ClassroomMembership, Wallet, Transaction, StockPrice
-from ..auth import get_current_user
+from database import get_db
+from models import User, Classroom, ClassroomMembership, Wallet, Transaction, StockPrice
+from auth import get_current_user
 from pydantic import BaseModel
 import random
 import string

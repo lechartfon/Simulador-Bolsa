@@ -3,9 +3,9 @@ from sqlalchemy.orm import Session
 from typing import List, Optional
 from pydantic import BaseModel
 from datetime import datetime
-from ..database import get_db
-from ..models import News, User
-from ..auth import get_current_user, get_admin_user
+from database import get_db
+from models import News, User
+from auth import get_current_user, get_admin_user
 
 router = APIRouter(
     prefix="/news",

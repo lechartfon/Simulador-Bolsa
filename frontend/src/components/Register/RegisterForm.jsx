@@ -172,8 +172,7 @@ const FormularioRegistro = () => {
             mx: 'auto',
             width: '100%'
           }}
-        >
-          <Avatar sx={{ m: 1, bgcolor: theme.palette.secondary.main, width: 56, height: 56 }}>
+        >          <Avatar sx={{ m: 1, bgcolor: tema.palette.secondary.main, width: 56, height: 56 }}>
             <PersonAddIcon fontSize="large" />
           </Avatar>
           <Typography component="h1" variant="h4" fontWeight="500" mb={4}>

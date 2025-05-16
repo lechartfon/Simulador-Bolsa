@@ -21,6 +21,10 @@ const fetchWithAuth = async (endpoint, options = {}) => {
     throw new Error(`Error ${response.status}: ${errorText}`);
   }
   
+  if (response.status === 204) {
+    return null;
+  }
+  
   return response.json();
 };
 
@@ -38,9 +42,9 @@ export const deleteNews = async (id) => {
     await fetchWithAuth(`/news/${id}`, {
       method: 'DELETE'
     });
-    return true;
+    return true; // Éxito en la eliminación
   } catch (error) {
     console.error(`Error deleting news with ID ${id}:`, error);
     throw error;
   }
-}; 
+};

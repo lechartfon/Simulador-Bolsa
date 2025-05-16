@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from .models import User, Wallet
-from .database import SessionLocal
+from models import User, Wallet
+from database import SessionLocal
 from passlib.hash import bcrypt
 from pydantic import BaseModel
 from datetime import datetime, timedelta
