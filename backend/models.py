@@ -9,7 +9,7 @@ from sqlalchemy.orm import relationship
 class StockPrice(Base):
     __tablename__ = "stock_prices"
     id = Column(Integer, primary_key=True, index=True)
-    timestamp = Column(DateTime, default=datetime.datetime.utcnow)
+    timestamp = Column("price_date", DateTime, default=datetime.datetime.utcnow)
     price = Column(Float)
     company_id = Column(Integer, ForeignKey("companies.id"), nullable=False)
 
@@ -50,7 +50,7 @@ class Transaction(Base):
     type = Column(Enum(TransactionType), nullable=False)
     quantity = Column(Integer, nullable=False)
     price_per_share = Column(DECIMAL(12, 2), nullable=False)
-    timestamp = Column(DateTime, default=func.now())
+    timestamp = Column("tx_date", DateTime, default=func.now())
     user = relationship("User", back_populates="transactions")
     company = relationship("Company", back_populates="transactions")
 
