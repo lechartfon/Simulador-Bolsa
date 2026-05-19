@@ -6,7 +6,6 @@ from datetime import datetime, timedelta
 import random
 from sqlalchemy.orm import Session
 
-# Importaciones internas
 from auth import router as auth_router
 from routes.stocks import router as stocks_router
 from routes.classroom import router as classroom_router  
@@ -15,7 +14,6 @@ from models import Base, Company, StockPrice, News, User
 from database import engine, SessionLocal, get_db
 from auth import get_current_user
 
-# Configuración básica para mostrar mensajes
 print("Iniciando aplicación del simulador de bolsa...")
 
 app = FastAPI()
@@ -30,17 +28,19 @@ app.add_middleware(
     expose_headers=["*"],
 )
 
-# Incluir los routers con prefijos explícitos
 app.include_router(auth_router, prefix="")
 app.include_router(stocks_router, prefix="")
 app.include_router(classroom_router, prefix="")
 app.include_router(news_router, prefix="")
 
+<<<<<<< HEAD
 # Las tablas se gestionan mediante migraciones de Supabase
 # Base.metadata.create_all(bind=engine)
+=======
+Base.metadata.create_all(bind=engine)
+>>>>>>> 505dd6d55ce3dfaadeb643ea13482eaaf8115fe0
 
 def initialize_default_companies():
-    # Conectar a la base de datos
     db = SessionLocal()
     
     # Lista de empresas del IBEX 35
@@ -84,10 +84,8 @@ def initialize_default_companies():
     
     # Agregar cada empresa a la base de datos
     for datos in lista_empresas:
-        # Ver si ya existe
         empresa = db.query(Company).filter(Company.name == datos["name"]).first()
         
-        # Si no existe, crearla
         if not empresa:
             nueva_empresa = Company(**datos)
             db.add(nueva_empresa)
@@ -96,36 +94,28 @@ def initialize_default_companies():
             empresa = nueva_empresa
             print(f"Añadida empresa: {empresa.name}")
         else:
-            # Si ya existe, borrar precios antiguos
             precios = db.query(StockPrice).filter(StockPrice.company_id == empresa.id).first()
             if precios:
                 print(f"Borrando precios antiguos de {empresa.name}")
                 db.query(StockPrice).filter(StockPrice.company_id == empresa.id).delete()
                 db.commit()
 
-        # Fijar semilla para generar datos consistentes
         random.seed(empresa.id * 1000)
 
-        # Precio inicial aleatorio
         precio_base = random.uniform(100, 500)
         dias = 365  # Un año de datos
         
-        # Generar precio para cada día
         for i in range(dias):
-            # Variación diaria entre -2.5% y 2.5%
             variacion = (random.random() - 0.5) * 0.05
             precio = precio_base * (1 + variacion)
             
-            # Cada 30 días simular eventos grandes
             if i % 30 == 0 and i > 0:
                 evento_grande = (random.random() - 0.5) * 0.15
                 precio = precio * (1 + evento_grande)
             
-            # No permitir precios menores a 20€
             if precio < 20:
                 precio = 20
             
-            # Guardar el precio en la base de datos
             nuevo_precio = StockPrice(
                 company_id=empresa.id,
                 timestamp=datetime.utcnow() - timedelta(days=dias - i),
@@ -133,14 +123,11 @@ def initialize_default_companies():
             )
             db.add(nuevo_precio)
             
-            # El precio de mañana parte del precio de hoy
             precio_base = precio
 
-        # Resetear la semilla aleatoria
         random.seed()
         db.commit()
     
-    # Cerrar conexión
     db.close()
 
 initialize_default_companies()
@@ -156,7 +143,6 @@ def initialize_default_news():
         db.close()
         return
     
-    # Buscar usuario admin
     admin = db.query(User).filter(User.email == "admin@admin").first()
     
     # Si no existe, crear el usuario admin
@@ -240,12 +226,10 @@ def initialize_default_news():
         }
     ]
     
-    # Agregar cada noticia
     for datos_noticia in noticias:
         noticia = News(**datos_noticia)
         db.add(noticia)
     
-    # Guardar cambios
     try:
         db.commit()
         print(f"¡Se han creado {len(noticias)} noticias!")
@@ -253,12 +237,10 @@ def initialize_default_news():
         db.rollback()
         print(f"Error al crear noticias: {e}")
     
-    # Cerrar conexión
     db.close()
 
 initialize_default_news()
 
-# Rutas base
 @app.get("/")
 async def root():
     return {"message": "API del simulador de bolsa funcionando correctamente"}
