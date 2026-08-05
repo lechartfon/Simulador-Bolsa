@@ -12,19 +12,21 @@ import {
 import PersonIcon from '@mui/icons-material/Person';
 import KeyIcon from '@mui/icons-material/Key';
 import ClassIcon from '@mui/icons-material/Class';
+import { useTranslation } from 'react-i18next';
 
 const ClassroomList = ({ classrooms, onSelectClassroom, selectedClassroom }) => {
+  const { t } = useTranslation();
   return (
     <Box>
       <Typography variant="h6" gutterBottom>
         <ClassIcon sx={{ verticalAlign: 'middle', mr: 1 }} />
-        Mis Clases
+        {t('classroomList.title')}
       </Typography>
       <Divider sx={{ mb: 2 }} />
       
       {classrooms.length === 0 ? (
         <Typography variant="body1" color="text.secondary" sx={{ p: 2, textAlign: 'center' }}>
-          No perteneces a ninguna clase todavía.
+          {t('classroomList.empty')}
         </Typography>
       ) : (
         <List sx={{ 
@@ -70,7 +72,7 @@ const ClassroomList = ({ classrooms, onSelectClassroom, selectedClassroom }) => 
                     />
                     <Chip 
                       icon={<PersonIcon fontSize="small" />}
-                      label={`${classroom.member_count} miembros`} 
+                      label={t('classroomList.membersCount', { count: classroom.member_count })} 
                       size="small"
                       variant="outlined"
                     />

@@ -21,10 +21,12 @@ import NewsCard from '../components/News/NewsCard';
 import FormularioNoticias from '../components/News/NewsForm';
 import DeleteConfirmationDialog from '../components/News/DeleteConfirmationDialog';
 import Layout from '../components/Layout/Layout';
+import { useTranslation } from 'react-i18next';
 
 const News = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const { t } = useTranslation();
   
   const [newsItems, setNewsItems] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -50,7 +52,7 @@ const News = () => {
       setNewsItems(data || []);
     } catch (err) {
       console.error('Error fetching news:', err);
-      setError('No se pudieron cargar las noticias. Por favor intenta nuevamente.');
+      setError(t('news.loadError'));
     } finally {
       setLoading(false);
     }
@@ -111,7 +113,7 @@ const News = () => {
       setNewsItems(prevItems => prevItems.filter(item => item.id !== newsToDelete));
     } catch (err) {
       console.error('Error deleting news:', err);
-      setError('Error al eliminar la noticia. Por favor intenta nuevamente.');
+      setError(t('news.deleteError'));
       await fetchNews();
     } finally {
       setIsDeleting(false);
@@ -129,10 +131,10 @@ const News = () => {
       <Container maxWidth="xl" sx={{ mt: 4, mb: 6 }}>
         <Box sx={{ mb: 4 }}>
           <Typography variant="h4" component="h1" gutterBottom>
-            Noticias Financieras
+            {t('news.title')}
           </Typography>
           <Typography variant="body1" color="text.secondary" paragraph>
-            Mantente al día con las últimas noticias del mundo financiero.
+            {t('news.subtitle')}
           </Typography>
         </Box>
 
@@ -148,7 +150,7 @@ const News = () => {
           elevation={1}
         >
           <TextField
-            placeholder="Buscar noticias..."
+            placeholder={t('news.searchPlaceholder')}
             variant="outlined"
             fullWidth
             value={searchTerm}
@@ -170,7 +172,7 @@ const News = () => {
               onClick={handleAddNews}
               sx={{ minWidth: { xs: '100%', sm: 'auto' } }}
             >
-              Nueva Noticia
+              {t('news.addNews')}
             </Button>
           )}
         </Paper>
@@ -188,11 +190,11 @@ const News = () => {
         ) : filteredNews.length === 0 ? (
           <Box sx={{ textAlign: 'center', my: 8 }}>
             <Typography variant="h6" color="text.secondary" gutterBottom>
-              No se encontraron noticias
+              {t('news.noNews')}
             </Typography>
             {searchTerm && (
               <Typography variant="body2" color="text.secondary">
-                No hay resultados para "{searchTerm}". Intenta con otra búsqueda.
+                {t('news.noResults', { searchTerm })}
               </Typography>
             )}
           </Box>

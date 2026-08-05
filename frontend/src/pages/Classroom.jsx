@@ -15,7 +15,10 @@ import {
   Alert,
   Snackbar
 } from '@mui/material';
+import { useTranslation } from 'react-i18next';
+
 const Classroom = () => {
+  const { t } = useTranslation();
   const [classrooms, setClassrooms] = useState([]);
   const [selectedClassroom, setSelectedClassroom] = useState(null);
   const [mensaje, setMensaje] = useState('');
@@ -51,7 +54,7 @@ const Classroom = () => {
         localStorage.removeItem('token');
         navigate('/login');
       }
-      setMensaje('Error al cargar tus clases. Por favor, intenta nuevamente.');
+      setMensaje(t('classroom.loadError'));
       setOpenSnackbar(true);
     }
   };
@@ -62,13 +65,13 @@ const Classroom = () => {
 
   const handleClassroomCreated = () => {
     fetchMyClassrooms();
-    setMensaje('Clase creada con éxito!');
+    setMensaje(t('classroom.createdSuccess'));
     setOpenSnackbar(true);
   };
 
   const handleClassroomJoined = () => {
     fetchMyClassrooms();
-    setMensaje('Te has unido a la clase con éxito!');
+    setMensaje(t('classroom.joinedSuccess'));
     setOpenSnackbar(true);
   };
 
@@ -80,7 +83,7 @@ const Classroom = () => {
     <Box sx={{ flexGrow: 1 }}>
       <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
         <Typography variant="h4" component="h1" sx={{ mb: 4 }}>
-          Competición de Trading
+          {t('classroom.title')}
         </Typography>
 
         <Snackbar 
@@ -135,7 +138,7 @@ const Classroom = () => {
                   height: '300px'
                 }}>
                   <Typography variant="h6" color="text.secondary">
-                    Selecciona una clase para ver su tabla de clasificación
+                    {t('classroom.selectClass')}
                   </Typography>
                 </Box>
               )}

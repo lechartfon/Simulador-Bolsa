@@ -11,8 +11,10 @@ import {
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import SchoolIcon from '@mui/icons-material/School';
+import { useTranslation } from 'react-i18next';
 
 const CreateClassroom = ({ onClassroomCreated }) => {
+  const { t } = useTranslation();
   const [name, setName] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -21,7 +23,7 @@ const CreateClassroom = ({ onClassroomCreated }) => {
     e.preventDefault();
     
     if (!name.trim()) {
-      setError('El nombre de la clase es obligatorio');
+      setError(t('createClassroom.nameRequired'));
       return;
     }
 
@@ -46,9 +48,9 @@ const CreateClassroom = ({ onClassroomCreated }) => {
       setIsLoading(false);
       console.error('Error al crear clase:', error);
       if (error.response && error.response.data) {
-        setError(error.response.data.detail || 'Error al crear la clase');
+        setError(error.response.data.detail || t('createClassroom.createError'));
       } else {
-        setError('Error al conectar con el servidor');
+        setError(t('createClassroom.serverError'));
       }
     }
   };
@@ -57,7 +59,7 @@ const CreateClassroom = ({ onClassroomCreated }) => {
     <Box>
       <Typography variant="h6" gutterBottom>
         <SchoolIcon sx={{ verticalAlign: 'middle', mr: 1 }} />
-        Crear Nueva Clase
+        {t('createClassroom.title')}
       </Typography>
       <Divider sx={{ mb: 2 }} />
       
@@ -67,15 +69,15 @@ const CreateClassroom = ({ onClassroomCreated }) => {
           required
           fullWidth
           id="className"
-          label="Nombre de la Clase"
+          label={t('createClassroom.nameLabel')}
           name="className"
           autoComplete="off"
           autoFocus
           value={name}
           onChange={(e) => setName(e.target.value)}
-          placeholder="Ej: Economía 101"
+          placeholder={t('createClassroom.namePlaceholder')}
           disabled={isLoading}
-          helperText="Introduce un nombre descriptivo para tu clase"
+          helperText={t('createClassroom.nameHelper')}
           sx={{ mb: 3 }}
         />
         
@@ -93,7 +95,7 @@ const CreateClassroom = ({ onClassroomCreated }) => {
           disabled={isLoading}
           startIcon={isLoading ? <CircularProgress size={20} /> : <AddIcon />}
         >
-          {isLoading ? 'Creando...' : 'Crear Clase'}
+          {isLoading ? t('createClassroom.creating') : t('createClassroom.create')}
         </Button>
       </Box>
     </Box>

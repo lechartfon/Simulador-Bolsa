@@ -1,6 +1,7 @@
 import React from 'react';
 import { Card, CardContent, CardMedia, Typography, Button, CardActions, Box } from '@mui/material';
 import { styled } from '@mui/material/styles';
+import { useTranslation } from 'react-i18next';
 
 const StyledCard = styled(Card)(({ theme }) => ({
   display: 'flex',
@@ -29,18 +30,19 @@ const TruncatedText = styled(Typography)(({ theme }) => ({
   textOverflow: 'ellipsis',
 }));
 
-const formatDate = (dateString) => {
-  const date = new Date(dateString);
-  return new Intl.DateTimeFormat('es-ES', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  }).format(date);
-};
-
 const NewsCard = ({ news, isAdmin, onEdit, onDelete }) => {
+  const { t, i18n } = useTranslation();
   const handleReadMore = () => {
     window.open(news.url, '_blank', 'noopener,noreferrer');
+  };
+
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return new Intl.DateTimeFormat(i18n.language === 'en' ? 'en-GB' : 'es-ES', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    }).format(date);
   };
 
   return (
@@ -62,15 +64,15 @@ const NewsCard = ({ news, isAdmin, onEdit, onDelete }) => {
       </StyledContent>
       <CardActions sx={{ justifyContent: 'space-between', pb: 2, px: 2 }}>
         <Button size="small" color="primary" onClick={handleReadMore}>
-          Leer más
+          {t('newsCard.readMore')}
         </Button>
         {isAdmin && (
           <Box>
             <Button size="small" color="primary" onClick={() => onEdit(news)} sx={{ mr: 1 }}>
-              Editar
+              {t('newsCard.edit')}
             </Button>
             <Button size="small" color="error" onClick={() => onDelete(news.id)}>
-              Eliminar
+              {t('newsCard.delete')}
             </Button>
           </Box>
         )}

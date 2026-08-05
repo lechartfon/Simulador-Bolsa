@@ -1,7 +1,9 @@
 import React, { useEffect, useRef } from 'react';
 import Highcharts from 'highcharts';
+import { useTranslation } from 'react-i18next';
 
 const GraficaValorCuenta = ({ accountValue, cashBalance, stocksValue }) => { 
+  const { t, i18n } = useTranslation();
   const contenedorGrafica = useRef(null);
   const grafica = useRef(null);
 
@@ -185,7 +187,7 @@ const GraficaValorCuenta = ({ accountValue, cashBalance, stocksValue }) => {
             }
           },          
           series: [{
-            name: 'Valor total',
+            name: t('charts.totalValue'),
             type: 'spline',
             data: datosTotal,
             color: '#1976d2', // azul
@@ -196,7 +198,7 @@ const GraficaValorCuenta = ({ accountValue, cashBalance, stocksValue }) => {
             enableMouseTracking: true,
             showInLegend: true
           }, {
-            name: 'Efectivo',
+            name: t('charts.cash'),
             type: 'spline',
             data: datosEfectivo,
             color: '#4caf50', // verde
@@ -207,7 +209,7 @@ const GraficaValorCuenta = ({ accountValue, cashBalance, stocksValue }) => {
             enableMouseTracking: true,
             showInLegend: true
           }, {
-            name: 'Acciones',
+            name: t('charts.stocks'),
             type: 'spline',
             data: datosAcciones,
             color: '#ff9800', // naranja
@@ -218,7 +220,7 @@ const GraficaValorCuenta = ({ accountValue, cashBalance, stocksValue }) => {
             enableMouseTracking: true,
             showInLegend: true
           }, {
-            name: 'Valor actual',
+            name: t('charts.currentValue'),
             type: 'scatter',
             data: [datosTotal[datosTotal.length - 1]],
             marker: {
@@ -245,7 +247,7 @@ const GraficaValorCuenta = ({ accountValue, cashBalance, stocksValue }) => {
         grafica.current = null;
       }
     };
-  }, [accountValue, cashBalance, stocksValue]);
+  }, [accountValue, cashBalance, stocksValue, i18n.language, t]);
 
   return (
     <div ref={contenedorGrafica} style={{ width: '100%', height: '400px', marginBottom: '20px' }} />

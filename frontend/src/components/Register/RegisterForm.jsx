@@ -13,8 +13,10 @@ import {
   useTheme
 } from "@mui/material";
 import PersonAddIcon from "@mui/icons-material/PersonAdd";
+import { useTranslation } from "react-i18next";
 
 const FormularioRegistro = () => {
+  const { t } = useTranslation();
   const [datosFormulario, setDatosFormulario] = useState({
     nombreUsuario: "",
     correo: "",
@@ -63,15 +65,15 @@ const FormularioRegistro = () => {
     if (validadores.minuscula.test(***REMOVED***)) puntos += 25;
 
     if (puntos === 100) {
-      mensaje = "¡Contraseña válida!";
+      mensaje = t("register.passwordValid");
     } else if (!validadores.longitud.test(***REMOVED***)) {
-      mensaje = "La contraseña debe tener al menos 8 caracteres";
+      mensaje = t("register.passwordLength");
     } else if (!validadores.numero.test(***REMOVED***)) {
-      mensaje = "Falta un número en la contraseña";
+      mensaje = t("register.passwordNumber");
     } else if (!validadores.mayuscula.test(***REMOVED***)) {
-      mensaje = "Falta una letra mayúscula";
+      mensaje = t("register.passwordUppercase");
     } else if (!validadores.minuscula.test(***REMOVED***)) {
-      mensaje = "Falta una letra minúscula";
+      mensaje = t("register.passwordLowercase");
     }
 
     setFuerzaContrasena(puntos);
@@ -80,9 +82,9 @@ const FormularioRegistro = () => {
 
   const validarConfirmacion = (***REMOVED***, confirmarContrasena) => {
     if (***REMOVED*** === confirmarContrasena && ***REMOVED*** !== "") {
-      setMensajeConfirmacion("¡Las contraseñas coinciden!");
+      setMensajeConfirmacion(t("register.passwordsMatch"));
     } else {
-      setMensajeConfirmacion("Las contraseñas no coinciden");
+      setMensajeConfirmacion(t("register.passwordsNoMatch"));
     }
   };
   const obtenerColorBarra = () => {
@@ -99,7 +101,7 @@ const FormularioRegistro = () => {
       fuerzaContrasena !== 100 ||
       datosFormulario.***REMOVED*** !== datosFormulario.confirmarContrasena
     ) {
-      setErrorEnvio("Corrige los errores antes de enviar el formulario");
+      setErrorEnvio(t("register.fixErrors"));
       return; 
     }
 
@@ -117,11 +119,11 @@ const FormularioRegistro = () => {
         datosUsuario
       );
       console.log("¡Registro completado con éxito!", respuesta.data);
-      alert("¡Te has registrado correctamente! Ahora inicia sesión.");
+      alert(t("register.successAlert"));
       navegar("/login");
     } catch (error) {
       console.error("Error durante el registro:", error.response);
-      setErrorEnvio("Hubo un problema con el registro. Inténtalo de nuevo.");
+      setErrorEnvio(t("register.registerError"));
     }
   };
   return (
@@ -176,7 +178,7 @@ const FormularioRegistro = () => {
             <PersonAddIcon fontSize="large" />
           </Avatar>
           <Typography component="h1" variant="h4" fontWeight="500" mb={4}>
-            Crear Cuenta
+            {t("register.title")}
           </Typography>
           <Box component="form" onSubmit={enviarFormulario} sx={{ width: '100%' }}>
             <TextField
@@ -184,7 +186,7 @@ const FormularioRegistro = () => {
               required
               fullWidth
               id="nombreUsuario"
-              label="Nombre de usuario"
+              label={t("register.username")}
               name="nombreUsuario"
               autoComplete="username"
               autoFocus
@@ -199,7 +201,7 @@ const FormularioRegistro = () => {
               required
               fullWidth
               id="correo"
-              label="Correo electrónico"
+              label={t("register.email")}
               name="correo"
               autoComplete="email"
               value={datosFormulario.correo}
@@ -213,7 +215,7 @@ const FormularioRegistro = () => {
               required
               fullWidth
               name="***REMOVED***"
-              label="Contraseña"
+              label={t("register.password")}
               type="password"
               id="***REMOVED***"
               value={datosFormulario.***REMOVED***}
@@ -249,7 +251,7 @@ const FormularioRegistro = () => {
               required
               fullWidth
               name="confirmarContrasena"
-              label="Confirmar Contraseña"
+              label={t("register.confirmPassword")}
               type="password"
               id="confirmarContrasena"
               value={datosFormulario.confirmarContrasena}
@@ -276,12 +278,12 @@ const FormularioRegistro = () => {
               color="secondary"
               sx={{ mt: 3, mb: 3, py: 1.5, borderRadius: 2, fontSize: '1rem' }}
             >
-              Crear mi cuenta
+              {t("register.submit")}
             </Button>
             
             <Divider sx={{ my: 3 }}>
               <Typography variant="body2" color="text.secondary">
-                o
+                {t("common.or")}
               </Typography>
             </Divider>
             
@@ -292,7 +294,7 @@ const FormularioRegistro = () => {
               variant="outlined"
               sx={{ borderRadius: 2, py: 1.2 }}
             >
-              ¿Ya tienes cuenta? Inicia sesión aquí
+              {t("register.haveAccount")}
             </Button>
           </Box>
         </Box>

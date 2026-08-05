@@ -12,8 +12,10 @@ import {
   Alert,
   CircularProgress
 } from '@mui/material';
+import { useTranslation } from 'react-i18next';
 
 const TransaccionesPage = () => {
+  const { t } = useTranslation();
   const [empresaSeleccionada, setEmpresaSeleccionada] = useState(null);
   const [dineroDisponible, setDineroDisponible] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -42,7 +44,7 @@ const TransaccionesPage = () => {
       if (response.data && response.data.balance) {
         setDineroDisponible(response.data.balance);
       } else {
-        setError('No se pudo cargar el saldo');
+        setError(t('transactions.loadBalanceError'));
       }
     } catch (error) {
       console.error("Error al cargar el saldo:", error);
@@ -52,7 +54,7 @@ const TransaccionesPage = () => {
         localStorage.removeItem('token');
         navigate('/login');
       } else {
-        setError('Error al cargar el saldo');
+        setError(t('transactions.loadBalanceError2'));
       }
     }
     
@@ -89,7 +91,7 @@ const TransaccionesPage = () => {
     <Box sx={{ flexGrow: 1 }}>
       <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
         <Typography variant="h4" component="h1" gutterBottom>
-          Transacciones
+          {t('transactions.title')}
         </Typography>
         
         {loading ? (
@@ -107,7 +109,7 @@ const TransaccionesPage = () => {
               sx={{ p: 2, mb: 3 }}
             >
               <Typography variant="h6" gutterBottom>
-                Buscar Empresas
+                {t('transactions.searchCompanies')}
               </Typography>
               <BuscadorAcciones onSelectEmpresa={handleEmpresaSeleccionada} />
             </Paper>
@@ -119,7 +121,7 @@ const TransaccionesPage = () => {
                   sx={{ p: 2, mb: 3 }}
                 >
                   <Typography variant="h6" gutterBottom>
-                    Gráfica: {empresaSeleccionada.name}
+                    {t('transactions.chartTitle', { company: empresaSeleccionada.name })}
                   </Typography>
                   <StockChart company={empresaSeleccionada.name} refExterno={chartRef} />
                 </Paper>
@@ -152,7 +154,7 @@ const TransaccionesPage = () => {
                 }}
               >
                 <Typography variant="h5" color="text.secondary" align="center">
-                  Selecciona una empresa para ver su gráfica y realizar transacciones
+                  {t('transactions.emptyMessage')}
                 </Typography>
               </Paper>
             )}

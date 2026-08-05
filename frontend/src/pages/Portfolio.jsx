@@ -31,6 +31,7 @@ import ArrowDropUpIcon from '@mui/icons-material/ArrowDropUp';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import SellIcon from '@mui/icons-material/Sell';
 import HistoryIcon from '@mui/icons-material/History';
+import { useTranslation } from 'react-i18next';
 
 // Panel para las pestañas
 function TabPanel(props) {
@@ -58,6 +59,7 @@ const PortfolioPage = () => {  const [tabValue, setTabValue] = useState(0);
   const [mensaje, setMensaje] = useState('');
   const [mensajeType, setMensajeType] = useState('info');
   const navigate = useNavigate();
+  const { t, i18n } = useTranslation();
    const cargarSaldo = async () => {
     try {
       const token = localStorage.getItem('token');
@@ -75,7 +77,7 @@ const PortfolioPage = () => {  const [tabValue, setTabValue] = useState(0);
       if (response.data && response.data.balance) {
         setDineroDisponible(response.data.balance);
       } else {
-        setError('No se pudo cargar el saldo');
+        setError(t('portfolio.loadBalanceError'));
       }
     } catch (error) {
       console.error("Error al cargar el saldo:", error);
@@ -84,7 +86,7 @@ const PortfolioPage = () => {  const [tabValue, setTabValue] = useState(0);
         localStorage.removeItem('token');
         navigate('/login');
       } else {
-        setError('Error al cargar el saldo');
+        setError(t('portfolio.loadBalanceError2'));
       }
     }
   };
@@ -111,7 +113,7 @@ const PortfolioPage = () => {  const [tabValue, setTabValue] = useState(0);
         localStorage.removeItem('token');
         navigate('/login');
       } else {
-        setError('Error al cargar el portfolio');
+        setError(t('portfolio.loadPortfolioError'));
       }
     }
   };
@@ -138,7 +140,7 @@ const PortfolioPage = () => {  const [tabValue, setTabValue] = useState(0);
         localStorage.removeItem('token');
         navigate('/login');
       } else {
-        setError('Error al cargar transacciones');
+        setError(t('portfolio.loadTransactionsError'));
       }
     }
   };
@@ -155,7 +157,7 @@ const PortfolioPage = () => {  const [tabValue, setTabValue] = useState(0);
       await cargarTransacciones();
     } catch (error) {
       console.error("Error al cargar datos:", error);
-      setError('Error al cargar los datos');
+      setError(t('portfolio.loadDataError'));
     }
     
     setLoading(false);
@@ -177,7 +179,7 @@ const PortfolioPage = () => {  const [tabValue, setTabValue] = useState(0);
 
   const formatFecha = (fechaStr) => {
     const fecha = new Date(fechaStr);
-    return fecha.toLocaleString('es-ES', { 
+    return fecha.toLocaleString(i18n.language === 'en' ? 'en-GB' : 'es-ES', { 
       day: '2-digit', 
       month: '2-digit', 
       year: 'numeric',
@@ -223,7 +225,7 @@ const PortfolioPage = () => {  const [tabValue, setTabValue] = useState(0);
       });
       
       if (response.status === 200) {
-        setMensaje(`Vendiste ${cantidadVenta} acciones de ${selectedStock.company_name}`);
+        setMensaje(t('portfolio.soldMessage', { quantity: cantidadVenta, company: selectedStock.company_name }));
         setMensajeType('success');
         
         // Actualizar el saldo en el header
@@ -236,7 +238,7 @@ const PortfolioPage = () => {  const [tabValue, setTabValue] = useState(0);
       }
     } catch (error) {
       console.error("Error al vender:", error);
-      setMensaje('Error al vender las acciones');
+      setMensaje(t('portfolio.sellError'));
       setMensajeType('error');
     }
   };
@@ -246,7 +248,7 @@ const PortfolioPage = () => {  const [tabValue, setTabValue] = useState(0);
 
       <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
         <Typography variant="h4" component="h1" gutterBottom>
-          Mi Portfolio
+          {t('portfolio.title')}
         </Typography>
         
         {mensaje && (
@@ -277,13 +279,13 @@ const PortfolioPage = () => {  const [tabValue, setTabValue] = useState(0);
               >
                 <Tab 
                   icon={<SellIcon />} 
-                  label="Mis Acciones" 
+                  label={t('portfolio.myStocks')} 
                   id="tab-0" 
                   aria-controls="tabpanel-0" 
                 />
                 <Tab 
                   icon={<HistoryIcon />} 
-                  label="Historial de Transacciones" 
+                  label={t('portfolio.transactionHistory')} 
                   id="tab-1" 
                   aria-controls="tabpanel-1" 
                 />
@@ -305,7 +307,7 @@ const PortfolioPage = () => {  const [tabValue, setTabValue] = useState(0);
                   }}
                 >
                   <Typography variant="h6" color="text.secondary" align="center">
-                    No tienes acciones en tu portfolio. Dirígete a la sección de compras para adquirir acciones.
+                    {t('portfolio.emptyPortfolio')}
                   </Typography>
                 </Paper>
               ) : (
@@ -313,13 +315,13 @@ const PortfolioPage = () => {  const [tabValue, setTabValue] = useState(0);
                   <Table>
                     <TableHead>
                       <TableRow>
-                        <TableCell>Empresa</TableCell>
-                        <TableCell align="right">Cantidad</TableCell>
-                        <TableCell align="right">Precio Compra Prom.</TableCell>
-                        <TableCell align="right">Precio Actual</TableCell>
-                        <TableCell align="right">Valor Total</TableCell>
-                        <TableCell align="right">Ganancia/Pérdida</TableCell>
-                        <TableCell align="center">Acciones</TableCell>
+                        <TableCell>{t('portfolio.colCompany')}</TableCell>
+                        <TableCell align="right">{t('portfolio.colQuantity')}</TableCell>
+                        <TableCell align="right">{t('portfolio.colAvgPrice')}</TableCell>
+                        <TableCell align="right">{t('portfolio.colCurrentPrice')}</TableCell>
+                        <TableCell align="right">{t('portfolio.colTotalValue')}</TableCell>
+                        <TableCell align="right">{t('portfolio.colProfitLoss')}</TableCell>
+                        <TableCell align="center">{t('portfolio.colActions')}</TableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>
@@ -361,7 +363,7 @@ const PortfolioPage = () => {  const [tabValue, setTabValue] = useState(0);
                               size="small"
                               onClick={() => handleVenderClick(stock)}
                             >
-                              Vender
+                              {t('portfolio.sellButton')}
                             </Button>
                           </TableCell>
                         </TableRow>
@@ -387,7 +389,7 @@ const PortfolioPage = () => {  const [tabValue, setTabValue] = useState(0);
                   }}
                 >
                   <Typography variant="h6" color="text.secondary" align="center">
-                    No has realizado ninguna transacción todavía.
+                    {t('portfolio.emptyTransactions')}
                   </Typography>
                 </Paper>
               ) : (
@@ -395,12 +397,12 @@ const PortfolioPage = () => {  const [tabValue, setTabValue] = useState(0);
                   <Table>
                     <TableHead>
                       <TableRow>
-                        <TableCell>Fecha</TableCell>
-                        <TableCell>Empresa</TableCell>
-                        <TableCell>Tipo</TableCell>
-                        <TableCell align="right">Cantidad</TableCell>
-                        <TableCell align="right">Precio Unitario</TableCell>
-                        <TableCell align="right">Precio Total</TableCell>
+                        <TableCell>{t('portfolio.colDate')}</TableCell>
+                        <TableCell>{t('portfolio.colCompany')}</TableCell>
+                        <TableCell>{t('portfolio.colType')}</TableCell>
+                        <TableCell align="right">{t('portfolio.colQuantity')}</TableCell>
+                        <TableCell align="right">{t('portfolio.colUnitPrice')}</TableCell>
+                        <TableCell align="right">{t('portfolio.colTotalPrice')}</TableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>
@@ -409,11 +411,11 @@ const PortfolioPage = () => {  const [tabValue, setTabValue] = useState(0);
                           <TableCell>{formatFecha(transaction.timestamp)}</TableCell>
                           <TableCell>{transaction.company_name}</TableCell>
                           <TableCell>
-                            {transaction.type === 'buy' ? 'Compra' : 'Venta'}
+                            {transaction.type === 'buy' ? t('portfolio.buy') : t('portfolio.sell')}
                           </TableCell>
                           <TableCell>
                             <Chip 
-                              label={transaction.type === 'buy' ? 'Compra' : 'Venta'} 
+                              label={transaction.type === 'buy' ? t('portfolio.buy') : t('portfolio.sell')} 
                               color={transaction.type === 'buy' ? 'info' : 'success'} 
                               size="small" 
                             />
@@ -433,18 +435,18 @@ const PortfolioPage = () => {  const [tabValue, setTabValue] = useState(0);
 
       {/* Diálogo para vender acciones */}
       <Dialog open={openVender} onClose={handleCloseVender}>
-        <DialogTitle>Vender Acciones</DialogTitle>
+        <DialogTitle>{t('portfolio.sellDialogTitle')}</DialogTitle>
         <DialogContent>
           {selectedStock && (
             <>
               <DialogContentText>
-                Estás a punto de vender acciones de <strong>{selectedStock.company_name}</strong>
+                {t('portfolio.sellDialogText', { company: selectedStock.company_name })}
               </DialogContentText>
               <Box mt={2} mb={2}>
                 <Grid container spacing={2}>
                   <Grid item xs={6}>
                     <Typography variant="body2" color="text.secondary">
-                      Acciones disponibles
+                      {t('portfolio.availableShares')}
                     </Typography>
                     <Typography variant="body1" fontWeight="medium">
                       {selectedStock.shares_owned}
@@ -452,7 +454,7 @@ const PortfolioPage = () => {  const [tabValue, setTabValue] = useState(0);
                   </Grid>
                   <Grid item xs={6}>
                     <Typography variant="body2" color="text.secondary">
-                      Precio actual
+                      {t('portfolio.currentPrice')}
                     </Typography>
                     <Typography variant="body1" fontWeight="medium">
                       {selectedStock.current_price.toFixed(2)}€
@@ -461,7 +463,7 @@ const PortfolioPage = () => {  const [tabValue, setTabValue] = useState(0);
                 </Grid>
               </Box>
               <TextField
-                label="Cantidad a vender"
+                label={t('portfolio.quantityToSell')}
                 type="number"
                 fullWidth
                 variant="outlined"
@@ -472,13 +474,13 @@ const PortfolioPage = () => {  const [tabValue, setTabValue] = useState(0);
                     min: 1, 
                     max: selectedStock.shares_owned 
                   },
-                  endAdornment: <InputAdornment position="end">acciones</InputAdornment>,
+                  endAdornment: <InputAdornment position="end">{t('portfolio.shares')}</InputAdornment>,
                 }}
                 margin="normal"
               />
               <Box mt={2}>
                 <Typography variant="body2" color="text.secondary">
-                  Total a recibir
+                  {t('portfolio.totalToReceive')}
                 </Typography>
                 <Typography variant="h6" color="primary.main" fontWeight="bold">
                   {(cantidadVenta * selectedStock.current_price).toFixed(2)}€
@@ -489,7 +491,7 @@ const PortfolioPage = () => {  const [tabValue, setTabValue] = useState(0);
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseVender} color="inherit">
-            Cancelar
+            {t('common.cancel')}
           </Button>
           <Button 
             onClick={handleVender} 
@@ -497,7 +499,7 @@ const PortfolioPage = () => {  const [tabValue, setTabValue] = useState(0);
             variant="contained"
             disabled={!selectedStock || cantidadVenta < 1 || cantidadVenta > (selectedStock?.shares_owned || 0)}
           >
-            Confirmar Venta
+            {t('portfolio.confirmSale')}
           </Button>
         </DialogActions>
       </Dialog>

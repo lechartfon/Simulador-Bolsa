@@ -19,8 +19,10 @@ import TrendingDownIcon from '@mui/icons-material/TrendingDown';
 import ShowChartIcon from '@mui/icons-material/ShowChart';
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
+import { useTranslation } from 'react-i18next';
 
 const Dashboard = () => {
+  const { t } = useTranslation();
   const [accountSummary, setAccountSummary] = useState(null);
   const [portfolio, setPortfolio] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -115,7 +117,7 @@ const Dashboard = () => {
         localStorage.removeItem('token');
         navigate('/login');
       } else {
-        setError('Error al cargar los datos. Por favor, recarga la página.');
+        setError(t('dashboard.loadError'));
       }
     } finally {
       setLoading(false);
@@ -142,7 +144,7 @@ const Dashboard = () => {
       ) : accountSummary && (
         <>
           <Typography variant="h4" gutterBottom sx={{ mb: 3, textAlign: { xs: 'center', md: 'left' } }}>
-          Dashboard
+          {t('dashboard.title')}
           </Typography>
 
           {/* Gráfica del valor de la cuenta */}          
@@ -154,7 +156,7 @@ const Dashboard = () => {
               backgroundColor: 'white'
             }}
           >            <Typography variant="h5" gutterBottom>
-              Evolución del valor de la cuenta
+              {t('dashboard.accountEvolution')}
             </Typography>
             <Box sx={{ width: '100%', height: { xs: '300px', md: '400px' }, overflow: 'hidden' }}>
               <GraficaValorCuenta 
@@ -175,7 +177,7 @@ const Dashboard = () => {
             }}
           >
             <Typography variant="h5" gutterBottom>
-              Información de Cuenta
+              {t('dashboard.accountInfo')}
             </Typography>
             <Grid container spacing={3} justifyContent="center">
               {/* Valor Total de la Cuenta */}              
@@ -197,7 +199,7 @@ const Dashboard = () => {
                 >
                   <CardContent sx={{ p: 3, flexGrow: 1 }}>
                     <Typography variant="h6" color="text.secondary" gutterBottom sx={{ textAlign: { xs: 'center', md: 'left' } }}>
-                      Valor Total de la Cuenta
+                      {t('dashboard.totalAccountValue')}
                     </Typography>
                     <Typography variant="h3" align="center">
                       {formatCurrency(accountSummary.valorTotal)}
@@ -238,14 +240,14 @@ const Dashboard = () => {
                 >
                   <CardContent sx={{ p: 3, flexGrow: 1 }}>
                     <Typography variant="h6" color="text.secondary" gutterBottom sx={{ textAlign: { xs: 'center', md: 'left' } }}>
-                      Dinero Disponible
+                      {t('dashboard.availableCash')}
                     </Typography>
                     <Typography variant="h3" align="center">
                       {formatCurrency(accountSummary.balance)}
                     </Typography>
                     <Box sx={{ mt: 2 }}>
                       <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center' }}>
-                        Valor de Acciones: {formatCurrency(accountSummary.valorAcciones)}
+                        {t('dashboard.stocksValue', { value: formatCurrency(accountSummary.valorAcciones) })}
                       </Typography>
                     </Box>
                   </CardContent>
@@ -265,7 +267,7 @@ const Dashboard = () => {
             }}
           >
             <Typography variant="h5" gutterBottom sx={{ mb: 2, textAlign: { xs: 'center', md: 'left' } }}>
-              Rendimiento de Inversiones
+              {t('dashboard.investmentPerformance')}
             </Typography>
             <Grid container spacing={3} justifyContent="center">
               {/* Mejor Rendimiento */}
@@ -287,7 +289,7 @@ const Dashboard = () => {
                 >
                   <CardContent sx={{ p: 3, flexGrow: 1 }}>
                     <Typography variant="h6" color="text.secondary" gutterBottom sx={{ textAlign: { xs: 'center', md: 'left' } }}>
-                      Mejor Rendimiento
+                      {t('dashboard.bestPerformer')}
                     </Typography>
                     {accountSummary.mejorAccion ? (
                       <>
@@ -296,21 +298,21 @@ const Dashboard = () => {
                         </Typography>
                         <Box sx={{ mt: 2 }}>
                           <Typography variant="body2" gutterBottom sx={{ textAlign: 'center' }}>
-                            Precio de compra: {formatCurrency(accountSummary.mejorAccion.avg_purchase_price)}
+                            {t('dashboard.purchasePrice', { value: formatCurrency(accountSummary.mejorAccion.avg_purchase_price) })}
                           </Typography>
                           <Typography variant="body2" gutterBottom sx={{ textAlign: 'center' }}>
-                            Precio actual: {formatCurrency(accountSummary.mejorAccion.current_price)}
+                            {t('dashboard.currentPrice', { value: formatCurrency(accountSummary.mejorAccion.current_price) })}
                           </Typography>
                           <Box sx={{ display: 'flex', alignItems: 'center', mt: 1, justifyContent: 'center' }}>
                             <TrendingUpIcon color="success" sx={{ mr: 1 }} />
                             <Typography variant="body1" color="success.main">
-                              Ganancia: {formatCurrency((accountSummary.mejorAccion.current_price - accountSummary.mejorAccion.avg_purchase_price) * accountSummary.mejorAccion.shares_owned)}
+                              {t('dashboard.profit', { value: formatCurrency((accountSummary.mejorAccion.current_price - accountSummary.mejorAccion.avg_purchase_price) * accountSummary.mejorAccion.shares_owned) })}
                             </Typography>
                           </Box>
                         </Box>
                       </>
                     ) : (
-                      <Typography variant="body1" sx={{ textAlign: 'center' }}>No hay acciones en cartera</Typography>
+                      <Typography variant="body1" sx={{ textAlign: 'center' }}>{t('dashboard.noStocks')}</Typography>
                     )}
                   </CardContent>
                 </Card>
@@ -335,7 +337,7 @@ const Dashboard = () => {
                 >
                   <CardContent sx={{ p: 3, flexGrow: 1 }}>
                     <Typography variant="h6" color="text.secondary" gutterBottom sx={{ textAlign: { xs: 'center', md: 'left' } }}>
-                      Peor Rendimiento
+                      {t('dashboard.worstPerformer')}
                     </Typography>
                     {accountSummary.peorAccion ? (
                       <>
@@ -344,21 +346,21 @@ const Dashboard = () => {
                         </Typography>
                         <Box sx={{ mt: 2 }}>
                           <Typography variant="body2" gutterBottom sx={{ textAlign: 'center' }}>
-                            Precio de compra: {formatCurrency(accountSummary.peorAccion.avg_purchase_price)}
+                            {t('dashboard.purchasePrice', { value: formatCurrency(accountSummary.peorAccion.avg_purchase_price) })}
                           </Typography>
                           <Typography variant="body2" gutterBottom sx={{ textAlign: 'center' }}>
-                            Precio actual: {formatCurrency(accountSummary.peorAccion.current_price)}
+                            {t('dashboard.currentPrice', { value: formatCurrency(accountSummary.peorAccion.current_price) })}
                           </Typography>
                           <Box sx={{ display: 'flex', alignItems: 'center', mt: 1, justifyContent: 'center' }}>
                             <TrendingDownIcon color="error" sx={{ mr: 1 }} />
                             <Typography variant="body1" color="error.main">
-                              Pérdida: {formatCurrency((accountSummary.peorAccion.current_price - accountSummary.peorAccion.avg_purchase_price) * accountSummary.peorAccion.shares_owned)}
+                              {t('dashboard.loss', { value: formatCurrency((accountSummary.peorAccion.current_price - accountSummary.peorAccion.avg_purchase_price) * accountSummary.peorAccion.shares_owned) })}
                             </Typography>
                           </Box>
                         </Box>
                       </>
                     ) : (
-                      <Typography variant="body1" sx={{ textAlign: 'center' }}>No hay acciones en cartera</Typography>
+                      <Typography variant="body1" sx={{ textAlign: 'center' }}>{t('dashboard.noStocks')}</Typography>
                     )}
                   </CardContent>
                 </Card>
@@ -376,7 +378,7 @@ const Dashboard = () => {
             }}
           >
             <Typography variant="h5" gutterBottom sx={{ mb: 2, textAlign: { xs: 'center', md: 'left' } }}>
-              Composición de Cartera
+              {t('dashboard.portfolioComposition')}
             </Typography>
             <Box sx={{ 
               display: 'flex', 
@@ -388,10 +390,10 @@ const Dashboard = () => {
             }}>
               <Box>
                 <Typography variant="body2" gutterBottom>
-                  Número total de acciones: {portfolio.reduce((total, stock) => total + stock.shares_owned, 0)}
+                  {t('dashboard.totalShares', { count: portfolio.reduce((total, stock) => total + stock.shares_owned, 0) })}
                 </Typography>
                 <Typography variant="body2" gutterBottom>
-                  Número de empresas diferentes: {portfolio.length}
+                  {t('dashboard.differentCompanies', { count: portfolio.length })}
                 </Typography>
               </Box>
               <Button 
@@ -411,7 +413,7 @@ const Dashboard = () => {
                   }
                 }}
               >
-                Ver Portfolio Completo
+                {t('dashboard.viewFullPortfolio')}
               </Button>
             </Box>
           </Paper>

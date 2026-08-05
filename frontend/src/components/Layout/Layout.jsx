@@ -24,6 +24,8 @@ import NewspaperIcon from '@mui/icons-material/Newspaper';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import MenuIcon from '@mui/icons-material/Menu';
 import axios from 'axios';
+import { useTranslation } from 'react-i18next';
+import LanguageSelector from '../LanguageSelector';
 
 const drawerWidth = 240;
 
@@ -38,28 +40,29 @@ const Layout = ({ children }) => {
   const location = useLocation();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const { t } = useTranslation();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [pageTitle, setPageTitle] = useState('');
   const [walletBalance, setWalletBalance] = useState(null);
 
   // Links del menú
   const menuItems = [
-    { name: 'Dashboard', path: '/dashboard', icon: <DashboardIcon /> },
-    { name: 'Portfolio', path: '/portfolio', icon: <ShowChartIcon /> },
-    { name: 'Transacciones', path: '/transacciones', icon: <AccountBalanceWalletIcon /> },
-    { name: 'Classroom', path: '/classroom', icon: <ClassIcon /> },
-    { name: 'Noticias', path: '/news', icon: <NewspaperIcon /> },
+    { nameKey: 'menu.dashboard', path: '/dashboard', icon: <DashboardIcon /> },
+    { nameKey: 'menu.portfolio', path: '/portfolio', icon: <ShowChartIcon /> },
+    { nameKey: 'menu.transactions', path: '/transacciones', icon: <AccountBalanceWalletIcon /> },
+    { nameKey: 'menu.classroom', path: '/classroom', icon: <ClassIcon /> },
+    { nameKey: 'menu.news', path: '/news', icon: <NewspaperIcon /> },
   ];
 
   // Actualizar título según la página actual
   useEffect(() => {
     const currentPage = menuItems.find(item => item.path === location.pathname);
     if (currentPage) {
-      setPageTitle(currentPage.name);
+      setPageTitle(t(currentPage.nameKey));
     } else {
-      setPageTitle('Simulador Bolsa');
+      setPageTitle(t('brand'));
     }
-  }, [location.pathname]);
+  }, [location.pathname, t]);
   
   // Obtener saldo
   const fetchWalletBalance = async () => {
@@ -77,7 +80,7 @@ const Layout = ({ children }) => {
         setWalletBalance(response.data.balance);
       }
     } catch (error) {
-      console.error('Error al cargar saldo:', error);
+      console.error(t('layout.balanceError'), error);
     }
   };
 
@@ -116,7 +119,7 @@ const Layout = ({ children }) => {
       }}>
         <ShowChartIcon sx={{ mr: 1 }} />
         <Typography variant="h6">
-          Simulador Bolsa
+          {t('brand')}
         </Typography>
       </Box>
       
@@ -124,7 +127,7 @@ const Layout = ({ children }) => {
         {menuItems.map((item) => (
           <ListItem 
             button 
-            key={item.name} 
+            key={item.nameKey} 
             component={Link} 
             to={item.path}
             sx={{ 
@@ -136,7 +139,7 @@ const Layout = ({ children }) => {
             <ListItemIcon sx={{ color: 'white' }}>
               {item.icon}
             </ListItemIcon>
-            <ListItemText primary={item.name} />
+            <ListItemText primary={t(item.nameKey)} />
           </ListItem>
         ))}
       </List>
@@ -152,7 +155,7 @@ const Layout = ({ children }) => {
           <ListItemIcon sx={{ color: 'white' }}>
             <ExitToAppIcon />
           </ListItemIcon>
-          <ListItemText primary="Cerrar Sesión" />
+          <ListItemText primary={t('layout.logout')} />
         </ListItem>
       </List>
     </Box>
@@ -186,7 +189,7 @@ const Layout = ({ children }) => {
           {walletBalance !== null && (
             <Chip
               icon={<AccountBalanceWalletIcon />}
-              label={isMobile ? `${walletBalance.toFixed(0)}€` : `Saldo: ${walletBalance.toFixed(2)}€`}
+              label={isMobile ? `${walletBalance.toFixed(0)}€` : t('layout.balance', { amount: walletBalance.toFixed(2) })}
               variant="filled"
               sx={{ 
                 color: 'white', 
@@ -196,6 +199,7 @@ const Layout = ({ children }) => {
               }}
             />
           )}
+          <LanguageSelector />
         </Toolbar>
       </AppBar>
 

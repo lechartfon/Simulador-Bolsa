@@ -1,11 +1,13 @@
 import React, { useEffect, useRef, useState } from 'react';
 import Highcharts from 'highcharts/highstock';
 import axios from 'axios';
+import { useTranslation } from 'react-i18next';
 
 window.chartData = window.chartData || {};
 
 // Este componente muestra un gráfico con los precios de las acciones
 const StockChart = ({ company, refExterno }) => {
+  const { t, i18n } = useTranslation();
   const chartContainerRef = useRef(null); 
   const chartRef = useRef(null);
   const [isLoading, setIsLoading] = useState(false); 
@@ -40,13 +42,13 @@ const StockChart = ({ company, refExterno }) => {
         // Creo o actualizo la gráfica
         if (chartRef.current) {
           chartRef.current.series[0].setData(data);
-          chartRef.current.setTitle({ text: `Histórico: ${company}` });
+          chartRef.current.setTitle({ text: t('charts.historyTitle', { company }) });
         } else {
           chartRef.current = Highcharts.stockChart(
             chartContainerRef.current,
             {
               rangeSelector: { selected: 1 },
-              title: { text: `Histórico: ${company}` },
+              title: { text: t('charts.historyTitle', { company }) },
               series: [{
                 name: company,
                 data,
@@ -68,15 +70,15 @@ const StockChart = ({ company, refExterno }) => {
     };
 
     fetchStockData();
-  }, [company, refExterno]);
+  }, [company, refExterno, i18n.language, t]);
 
   return (
     <div>
-      {isLoading && <div style={{ textAlign: 'center', marginBottom: '10px' }}>Cargando datos...</div>}
+      {isLoading && <div style={{ textAlign: 'center', marginBottom: '10px' }}>{t('charts.loading')}</div>}
       <div ref={chartContainerRef} style={{ height: '500px', width: '100%' }} />
       {lastPrice && (
         <div style={{ textAlign: 'right', marginTop: '10px', fontWeight: 'bold' }}>
-          Último precio: {lastPrice.toFixed(2)}€
+          {t('charts.lastPrice', { amount: `${lastPrice.toFixed(2)}€` })}
         </div>
       )}
     </div>

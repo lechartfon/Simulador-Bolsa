@@ -9,8 +9,10 @@ import {
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import BusinessIcon from '@mui/icons-material/Business';
+import { useTranslation } from 'react-i18next';
 
 const BuscadorAcciones = ({ onSelectEmpresa }) => {
+    const { t } = useTranslation();
     const [busqueda, setBusqueda] = useState('');
     const [resultados, setResultados] = useState([]);
     const [empresas, setEmpresas] = useState([]);
@@ -60,7 +62,7 @@ const BuscadorAcciones = ({ onSelectEmpresa }) => {
                 renderInput={(params) => (
                     <TextField
                         {...params}
-                        label="Buscar empresa..."
+                        label={t('buscador.searchLabel')}
                         fullWidth
                         variant="outlined"
                         InputProps={{
@@ -84,7 +86,7 @@ const BuscadorAcciones = ({ onSelectEmpresa }) => {
                     }
                 }}
                 loading={loading}
-                noOptionsText="No se encontraron empresas"
+                noOptionsText={t('buscador.noResults')}
             />
         </Box>
     );

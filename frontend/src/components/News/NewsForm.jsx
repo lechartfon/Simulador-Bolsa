@@ -9,8 +9,10 @@ import {
   Grid,            
   CircularProgress 
 } from '@mui/material';
+import { useTranslation } from 'react-i18next';
 
 const FormularioNoticias = ({ open, onClose, initialData, onSuccess }) => {
+  const { t } = useTranslation();
   const [titulo, setTitulo] = useState('');
   const [contenido, setContenido] = useState('');
   const [enlace, setEnlace] = useState('');
@@ -35,7 +37,7 @@ const FormularioNoticias = ({ open, onClose, initialData, onSuccess }) => {
   }, [open, initialData]);
   const enviarFormulario = () => {
     if (!titulo.trim() || !contenido.trim() || !enlace.trim()) {
-      setMensajeError('¡Atención! Debes completar todos los campos obligatorios');
+      setMensajeError(t('newsForm.requiredError'));
       return;
     }
 
@@ -90,7 +92,7 @@ const FormularioNoticias = ({ open, onClose, initialData, onSuccess }) => {
       maxWidth="md"
     >
       <DialogTitle>
-        {initialData ? 'Editar Noticia' : 'Crear Nueva Noticia'}
+        {initialData ? t('newsForm.editTitle') : t('newsForm.createTitle')}
       </DialogTitle>
       
       <DialogContent>
@@ -102,31 +104,31 @@ const FormularioNoticias = ({ open, onClose, initialData, onSuccess }) => {
         <Grid container spacing={2} style={{ marginTop: '10px' }}>
           <Grid item xs={12}>
             <TextField
-              label="Título de la noticia *"
+              label={t('newsForm.titleLabel')}
               value={titulo}
               onChange={(e) => setTitulo(e.target.value)}
               fullWidth
               disabled={cargando}
-              placeholder="Ej: Nueva tecnología blockchain revoluciona el mercado"
+              placeholder={t('newsForm.titlePlaceholder')}
             />
           </Grid>
           
           <Grid item xs={12}>
             <TextField
-              label="Contenido de la noticia *"
+              label={t('newsForm.contentLabel')}
               value={contenido}
               onChange={(e) => setContenido(e.target.value)}
               fullWidth
               multiline
               rows={4}
               disabled={cargando}
-              placeholder="Escribe aquí el texto completo de la noticia..."
+              placeholder={t('newsForm.contentPlaceholder')}
             />
           </Grid>
           
           <Grid item xs={12} md={6}>
             <TextField
-              label="Enlace a la fuente original *"
+              label={t('newsForm.urlLabel')}
               value={enlace}
               onChange={(e) => setEnlace(e.target.value)}
               fullWidth
@@ -137,7 +139,7 @@ const FormularioNoticias = ({ open, onClose, initialData, onSuccess }) => {
           
           <Grid item xs={12} md={6}>
             <TextField
-              label="Enlace a la imagen (opcional)"
+              label={t('newsForm.imageLabel')}
               value={imagenUrl}
               onChange={(e) => setImagenUrl(e.target.value)}
               fullWidth
@@ -152,7 +154,7 @@ const FormularioNoticias = ({ open, onClose, initialData, onSuccess }) => {
           onClick={onClose} 
           disabled={cargando}
         >
-          Cancelar
+          {t('common.cancel')}
         </Button>
         
         <Button
@@ -164,9 +166,9 @@ const FormularioNoticias = ({ open, onClose, initialData, onSuccess }) => {
           {cargando ? (
             <>
               <CircularProgress size={20} style={{ marginRight: '8px' }} />
-              Guardando datos...
+              {t('newsForm.saving')}
             </>
-          ) : initialData ? 'Guardar cambios' : 'Crear noticia'}
+          ) : initialData ? t('newsForm.saveChanges') : t('newsForm.create')}
         </Button>
       </DialogActions>
     </Dialog>

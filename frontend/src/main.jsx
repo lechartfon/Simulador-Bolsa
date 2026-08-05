@@ -5,6 +5,7 @@ import { ThemeProvider } from '@mui/material/styles'
 import CssBaseline from '@mui/material/CssBaseline'
 import theme from './theme'
 import axios from 'axios'
+import './i18n'
 
 // Configuración de axios
 axios.defaults.baseURL = 'http://localhost:8000'

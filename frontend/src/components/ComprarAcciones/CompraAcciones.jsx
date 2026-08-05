@@ -19,9 +19,11 @@ import {
 } from '@mui/material';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
+import { useTranslation } from 'react-i18next';
 
 // Componente para comprar acciones
 const CompraAcciones = ({ empresa, chartRef, dineroDisponible, onCompraExitosa }) => {
+  const { t } = useTranslation();
   const [cantidad, setCantidad] = useState(1);
   const [mensaje, setMensaje] = useState('');
   const [mensajeType, setMensajeType] = useState('info');
@@ -167,19 +169,19 @@ const CompraAcciones = ({ empresa, chartRef, dineroDisponible, onCompraExitosa }
 
   const handleOpenConfirmDialog = () => {
     if (!empresa) {
-      setMensaje('Error: No hay empresa seleccionada.');
+      setMensaje(t('comprar.noCompanyError'));
       setMensajeType('error');
       return;
     }
     
     if (!empresaId) {
-      setMensaje('Error: No se pudo obtener el ID de la empresa. Intente seleccionando la empresa nuevamente.');
+      setMensaje(t('comprar.noIdError'));
       setMensajeType('error');
       return;
     }
     
     if (!precioActual) {
-      setMensaje('No se pudo obtener el precio actual. Intente refrescar la página.');
+      setMensaje(t('comprar.noPriceError'));
       setMensajeType('error');
       return;
     }
@@ -187,7 +189,7 @@ const CompraAcciones = ({ empresa, chartRef, dineroDisponible, onCompraExitosa }
     const total = Math.round(precioActual * cantidad * 100) / 100;
 
     if (total > dineroDisponible) {
-      setMensaje('No tienes suficiente dinero para esta compra.');
+      setMensaje(t('comprar.notEnoughMoney'));
       setMensajeType('warning');
       return;
     }
@@ -208,7 +210,7 @@ const CompraAcciones = ({ empresa, chartRef, dineroDisponible, onCompraExitosa }
       const token = localStorage.getItem('token');
       
       if (!token) {
-        setMensaje('Error: No hay sesión iniciada');
+        setMensaje(t('comprar.noSessionError'));
         setMensajeType('error');
         setIsLoading(false);
         return;
@@ -238,7 +240,7 @@ const CompraAcciones = ({ empresa, chartRef, dineroDisponible, onCompraExitosa }
         
         onCompraExitosa(cantidad, total);
         
-        setMensaje(`Compra realizada: ${cantidad} acciones de ${empresa.name}`);
+        setMensaje(t('comprar.purchaseDone', { quantity: cantidad, company: empresa.name }));
         setMensajeType('success');
       } else {
         setMensaje(`Error: ${response.statusText}`);
@@ -249,9 +251,9 @@ const CompraAcciones = ({ empresa, chartRef, dineroDisponible, onCompraExitosa }
       
       if (error.response && error.response.status === 401) {
         localStorage.removeItem('token');
-        setMensaje('Error: Sesión expirada');
+        setMensaje(t('comprar.sessionExpired'));
       } else {
-        setMensaje('Error al hacer la compra');
+        setMensaje(t('comprar.purchaseError'));
       }
       setMensajeType('error');
     } finally {
@@ -269,7 +271,7 @@ const CompraAcciones = ({ empresa, chartRef, dineroDisponible, onCompraExitosa }
       <Card>
         <CardContent>
           <Typography variant="h5" gutterBottom>
-            Comprar acciones
+            {t('comprar.title')}
           </Typography>
           {empresa && (
             <Typography variant="h6" color="text.secondary" gutterBottom>
@@ -279,14 +281,14 @@ const CompraAcciones = ({ empresa, chartRef, dineroDisponible, onCompraExitosa }
           
           <Box sx={{ mb: 2 }}>
             <Typography variant="body1">
-              Dinero disponible: {dineroDisponible ? `${dineroDisponible.toFixed(2)}€` : "Cargando..."}
+              {t('comprar.availableMoney', { amount: dineroDisponible ? `${dineroDisponible.toFixed(2)}€` : t('common.loading') })}
             </Typography>
           </Box>
           
           {precioActual && (
             <Box sx={{ mb: 2 }}>
               <Typography variant="body1">
-                Precio actual: {precioActual.toFixed(2)}€
+                {t('comprar.currentPrice', { amount: `${precioActual.toFixed(2)}€` })}
               </Typography>
             </Box>
           )}
@@ -295,14 +297,14 @@ const CompraAcciones = ({ empresa, chartRef, dineroDisponible, onCompraExitosa }
           
           <Box sx={{ mb: 2 }}>
             <TextField
-              label="Cantidad"
+              label={t('comprar.quantity')}
               type="number"
               fullWidth
               variant="outlined"
               value={cantidad}
               InputProps={{
                 inputProps: { min: 1 },
-                endAdornment: <InputAdornment position="end">acciones</InputAdornment>,
+                endAdornment: <InputAdornment position="end">{t('comprar.shares')}</InputAdornment>,
               }}
               onChange={(e) => setCantidad(parseInt(e.target.value) || 1)}
             />
@@ -311,7 +313,7 @@ const CompraAcciones = ({ empresa, chartRef, dineroDisponible, onCompraExitosa }
           {precioActual && (
             <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
               <Typography variant="body1" fontWeight="bold">
-                Total a pagar:
+                {t('comprar.totalToPay')}
               </Typography>
               <Typography variant="body1" fontWeight="bold" color="secondary">
                 {calculaTotal()}€
@@ -329,7 +331,7 @@ const CompraAcciones = ({ empresa, chartRef, dineroDisponible, onCompraExitosa }
             onClick={handleOpenConfirmDialog}
             disabled={isLoading || !empresaId || !precioActual}
           >
-            {isLoading ? "Procesando..." : "Comprar"}
+            {isLoading ? t('comprar.processing') : t('comprar.buy')}
           </Button>
         </CardActions>
         
@@ -344,7 +346,7 @@ const CompraAcciones = ({ empresa, chartRef, dineroDisponible, onCompraExitosa }
         {!empresaId && empresa && (
           <Box sx={{ px: 2, pb: 2 }}>
             <Alert severity="warning">
-              Cargando datos de la empresa...
+              {t('comprar.loadingCompany')}
             </Alert>
           </Box>
         )}
@@ -352,7 +354,7 @@ const CompraAcciones = ({ empresa, chartRef, dineroDisponible, onCompraExitosa }
         {!precioActual && empresa && (
           <Box sx={{ px: 2, pb: 2 }}>
             <Alert severity="warning">
-              Esperando a que se cargue el precio actual...
+              {t('comprar.loadingPrice')}
             </Alert>
           </Box>
         )}
@@ -365,20 +367,19 @@ const CompraAcciones = ({ empresa, chartRef, dineroDisponible, onCompraExitosa }
         aria-describedby="alert-dialog-description"
       >
         <DialogTitle id="alert-dialog-title">
-          {"Confirmar compra de acciones"}
+          {t('comprar.confirmTitle')}
         </DialogTitle>
         <DialogContent>
           <DialogContentText id="alert-dialog-description">
-            Estás a punto de comprar {cantidad} acciones de {empresa?.name} por un total de {calculaTotal()}€. 
-            ¿Estás seguro de que deseas realizar esta operación?
+            {t('comprar.confirmText', { quantity: cantidad, company: empresa?.name, total: calculaTotal() })}
           </DialogContentText>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseConfirmDialog} color="error">
-            Cancelar
+            {t('common.cancel')}
           </Button>
           <Button onClick={handleCompra} color="primary" variant="contained" autoFocus>
-            Confirmar compra
+            {t('comprar.confirmButton')}
           </Button>
         </DialogActions>
       </Dialog>

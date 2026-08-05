@@ -23,8 +23,10 @@ import TrendingDownIcon from '@mui/icons-material/TrendingDown';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
 import InfoIcon from '@mui/icons-material/Info';
+import { useTranslation } from 'react-i18next';
 
 const TablaClasificacion = ({ classroom }) => {
+  const { t } = useTranslation();
   const [ranking, setRanking] = useState([]);
   const [cargando, setCargando] = useState(false); 
   const [error, setError] = useState('');
@@ -61,9 +63,9 @@ const TablaClasificacion = ({ classroom }) => {
       console.error('¡Ups! No pudimos cargar la clasificación:', error);
       
       if (error.response && error.response.data) {
-        setError(error.response.data.detail || 'Error al cargar la clasificación');
+        setError(error.response.data.detail || t('leaderboard.loadError'));
       } else {
-        setError('No pudimos conectar con el servidor. ¿Está encendido?');
+        setError(t('leaderboard.serverError'));
       }
     }
   };
@@ -87,7 +89,7 @@ const TablaClasificacion = ({ classroom }) => {
     <Box>
       <Typography variant="h6" gutterBottom>
         <LeaderboardIcon sx={{ verticalAlign: 'middle', mr: 1 }} />
-        Tabla de Clasificación: {classroom.name}
+        {t('leaderboard.title', { name: classroom.name })}
       </Typography>
       <Divider sx={{ mb: 2 }} />
       
@@ -104,7 +106,7 @@ const TablaClasificacion = ({ classroom }) => {
           {/* Si no hay datos, mostrar mensaje */}
           {ranking.length === 0 ? (
             <Typography variant="body1" color="text.secondary" align="center" sx={{ py: 4 }}>
-              No hay datos disponibles
+              {t('leaderboard.noData')}
             </Typography>
           ) : (
             <Paper elevation={0} variant="outlined">
@@ -114,20 +116,20 @@ const TablaClasificacion = ({ classroom }) => {
                   <TableRow sx={{ bgcolor: 'primary.light' }}>
                     {/* Columna de posición */}
                     <TableCell width="80px">
-                      <Typography variant="subtitle2" fontWeight="bold">Posición</Typography>
+                      <Typography variant="subtitle2" fontWeight="bold">{t('leaderboard.colPosition')}</Typography>
                     </TableCell>
                     
                     {/* Columna de estudiante */}
                     <TableCell>
-                      <Typography variant="subtitle2" fontWeight="bold">Estudiante</Typography>
+                      <Typography variant="subtitle2" fontWeight="bold">{t('leaderboard.colStudent')}</Typography>
                     </TableCell>
                     
                     {/* Columna de valor actual */}
                     <TableCell align="right">
                       <Box display="flex" alignItems="center" justifyContent="flex-end">
-                        <Typography variant="subtitle2" fontWeight="bold">Valor Actual</Typography>
+                        <Typography variant="subtitle2" fontWeight="bold">{t('leaderboard.colCurrentValue')}</Typography>
                         <Tooltip 
-                          title="Es todo lo que tiene el estudiante: dinero en efectivo + valor de todas sus acciones al precio actual." 
+                          title={t('leaderboard.valueTooltip')} 
                           placement="top"
                           arrow
                         >
@@ -139,9 +141,9 @@ const TablaClasificacion = ({ classroom }) => {
                     </TableCell>
                     <TableCell align="right">
                       <Box display="flex" alignItems="center" justifyContent="flex-end">
-                        <Typography variant="subtitle2" fontWeight="bold">Rendimiento</Typography>
+                        <Typography variant="subtitle2" fontWeight="bold">{t('leaderboard.colPerformance')}</Typography>
                         <Tooltip 
-                          title="El porcentaje de ganancia o pérdida respecto a los 50.000€ iniciales. Se calcula así: (Valor Actual - 50.000€) / 50.000€ × 100%" 
+                          title={t('leaderboard.performanceTooltip')} 
                           placement="top"
                           arrow
                         >
@@ -191,7 +193,7 @@ const TablaClasificacion = ({ classroom }) => {
                       </TableCell>
                       <TableCell align="right">
                         <Tooltip 
-                          title={`Dinero en efectivo + valor de acciones. Empezó con 50.000€`}
+                          title={t('leaderboard.valueCellTooltip')}
                           placement="left"
                           arrow
                         >
@@ -206,7 +208,7 @@ const TablaClasificacion = ({ classroom }) => {
                       
                       <TableCell align="right">
                         <Tooltip 
-                          title={`Cuánto ha ganado o perdido desde los 50.000€ iniciales`}
+                          title={t('leaderboard.performanceCellTooltip')}
                           placement="left"
                           arrow
                         >

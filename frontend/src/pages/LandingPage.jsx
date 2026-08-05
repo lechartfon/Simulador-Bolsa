@@ -20,15 +20,17 @@ import AccountBalanceWalletIcon from "@mui/icons-material/AccountBalanceWallet";
 import TimelineIcon from "@mui/icons-material/Timeline";
 import NewspaperIcon from "@mui/icons-material/Newspaper";
 import SecurityIcon from "@mui/icons-material/Security";
+import { useTranslation } from "react-i18next";
+import LanguageSelector from "../components/LanguageSelector";
 
 const LandingPage = () => {
   const theme = useTheme();
+  const { t } = useTranslation();
 
 const features = [
     {
-      title: "Simulación Realista",
-      description:
-        "Experimenta con un entorno de trading que simula el mercado real con datos actualizados.",
+      titleKey: "landing.featureRealisticTitle",
+      descriptionKey: "landing.featureRealisticDesc",
       icon: (
         <ShowChartIcon
           fontSize="large"
@@ -37,9 +39,8 @@ const features = [
       ),
     },
     {
-      title: "Classroom",
-      description:
-        "Aprende con otros y participa en competiciones en un entorno educativo controlado.",
+      titleKey: "landing.featureClassroomTitle",
+      descriptionKey: "landing.featureClassroomDesc",
       icon: (
         <SchoolIcon
           fontSize="large"
@@ -48,9 +49,8 @@ const features = [
       ),
     },
     {
-      title: "Gestión de Cartera",
-      description:
-        "Realiza un seguimiento de tus inversiones y analiza el rendimiento de tu cartera.",
+      titleKey: "landing.featurePortfolioTitle",
+      descriptionKey: "landing.featurePortfolioDesc",
       icon: (
         <AccountBalanceWalletIcon
           fontSize="large"
@@ -59,9 +59,8 @@ const features = [
       ),
     },
     {
-      title: "Datos en Tiempo Real",
-      description:
-        "Accede a gráficos y estadísticas para tomar decisiones informadas.",
+      titleKey: "landing.featureRealTimeTitle",
+      descriptionKey: "landing.featureRealTimeDesc",
       icon: (
         <TimelineIcon
           fontSize="large"
@@ -70,9 +69,8 @@ const features = [
       ),
     },
     {
-      title: "Noticias Financieras",
-      description:
-        "Mantente informado con las últimas noticias que afectan al mercado.",
+      titleKey: "landing.featureNewsTitle",
+      descriptionKey: "landing.featureNewsDesc",
       icon: (
         <NewspaperIcon
           fontSize="large"
@@ -81,9 +79,8 @@ const features = [
       ),
     },
     {
-      title: "Entorno Seguro",
-      description:
-        "Practica inversiones sin riesgo con 50.000€ de capital inicial virtual.",
+      titleKey: "landing.featureSafeTitle",
+      descriptionKey: "landing.featureSafeDesc",
       icon: (
         <SecurityIcon
           fontSize="large"
@@ -112,7 +109,7 @@ const features = [
             </Box>
           </Typography>
           <Button component={Link} to="/login" color="inherit" sx={{ mx: 1 }}>
-            Iniciar Sesión
+            {t('landing.login')}
           </Button>
           <Button
             component={Link}
@@ -121,8 +118,9 @@ const features = [
             color="secondary"
             sx={{ color: "white" }}
           >
-            Registrarse
+            {t('landing.register')}
           </Button>
+          <LanguageSelector />
         </Toolbar>
       </AppBar>      
       {/* Banner principal */}
@@ -146,11 +144,10 @@ const features = [
               mb: 4,
             }}
           >
-            Simula. Aprende. Invierte.
+            {t('landing.heroTitle')}
           </Typography>
           <Typography variant="h5" paragraph>
-            La plataforma educativa que te permite aprender a invertir en la
-            bolsa sin riesgos reales
+            {t('landing.heroSubtitle')}
           </Typography>
           <Box sx={{ mt: 4 }}>
             <Button
@@ -167,7 +164,7 @@ const features = [
                 mx: 1,
               }}
             >
-              Empieza Gratis
+              {t('landing.startFree')}
             </Button>
             <Button
               component={Link}
@@ -189,7 +186,7 @@ const features = [
                 mx: 1,
               }}
             >
-              Iniciar Sesión
+              {t('landing.login')}
             </Button>
           </Box>
         </Container>
@@ -197,7 +194,7 @@ const features = [
       {/* Lista de funcionalidades */}
       <Box sx={{ py: 8 }} maxWidth="lg">
         <Typography variant="h3" component="h2" align="center" gutterBottom>
-          Características Principales
+          {t('landing.featuresTitle')}
         </Typography>
         <Typography
           variant="h6"
@@ -206,8 +203,7 @@ const features = [
           paragraph
           sx={{ mb: 6 }}
         >
-          Todo lo que necesitas para aprender a invertir en la bolsa de manera
-          segura
+          {t('landing.featuresSubtitle')}
         </Typography>
 
         <Grid container spacing={4} alignItems="stretch" justifyContent="center">
@@ -266,10 +262,10 @@ const features = [
                     component="h3"
                     sx={{ mb: 2 }}
                   >
-                    {feature.title}
+                    {t(feature.titleKey)}
                   </Typography>
                   <Typography color="textSecondary">
-                    {feature.description}
+                    {t(feature.descriptionKey)}
                   </Typography>
                 </CardContent>
               </Card>
@@ -281,7 +277,7 @@ const features = [
       <Box sx={{ bgcolor: "background.paper", py: 8 }}>
         <Container maxWidth="lg">
           <Typography variant="h3" component="h2" align="center" gutterBottom>
-            Cómo Funciona
+            {t('landing.howTitle')}
           </Typography>
           <Typography
             variant="h6"
@@ -290,7 +286,7 @@ const features = [
             paragraph
             sx={{ mb: 6 }}
           >
-            Tres pasos fáciles para empezar a invertir
+            {t('landing.howSubtitle')}
           </Typography>
 
           <Grid container spacing={4} alignItems="stretch" justifyContent="center">
@@ -333,11 +329,10 @@ const features = [
                   1
                 </Avatar>
                 <Typography variant="h5" component="h3" sx={{ mb: 2 }}>
-                  Regístrate
+                  {t('landing.stepRegister')}
                 </Typography>
                 <Typography color="textSecondary">
-                  Crea tu cuenta en menos de un minuto y recibe €50.000 en
-                  capital virtual para invertir.
+                  {t('landing.stepRegisterDesc')}
                 </Typography>
               </Paper>
             </Grid>
@@ -381,11 +376,10 @@ const features = [
                   2
                 </Avatar>
                 <Typography variant="h5" component="h3" sx={{ mb: 2 }}>
-                  Aprende
+                  {t('landing.stepLearn')}
                 </Typography>
                 <Typography color="textSecondary">
-                  Familiarízate con la plataforma, explora los distintos
-                  mercados y análisis disponibles.
+                  {t('landing.stepLearnDesc')}
                 </Typography>
               </Paper>
             </Grid>
@@ -429,11 +423,10 @@ const features = [
                   3
                 </Avatar>
                 <Typography variant="h5" component="h3" sx={{ mb: 2 }}>
-                  Invierte
+                  {t('landing.stepInvest')}
                 </Typography>
                 <Typography color="textSecondary">
-                  Realiza operaciones sin riesgo, construye tu cartera y
-                  monitoriza tu rendimiento.
+                  {t('landing.stepInvestDesc')}
                 </Typography>
               </Paper>
             </Grid>
@@ -451,11 +444,10 @@ const features = [
       >
         <Container maxWidth="md">
           <Typography variant="h4" component="h2" gutterBottom>
-            ¿Listo para empezar tu viaje de inversión?
+            {t('landing.ctaTitle')}
           </Typography>
           <Typography variant="h6" paragraph sx={{ mb: 4 }}>
-            Únete a miles de estudiantes e inversores que están mejorando sus
-            habilidades financieras
+            {t('landing.ctaSubtitle')}
           </Typography>
           <Button
             component={Link}
@@ -468,9 +460,9 @@ const features = [
               py: 1.5,
               px: 4,
             }}
-          >
-            Crear Cuenta Gratuita
-          </Button>
+            >
+              {t('landing.ctaButton')}
+            </Button>
         </Container>
       </Box>
 
@@ -478,7 +470,7 @@ const features = [
       <Box component="footer" sx={{ bgcolor: "background.paper", py: 6 }}>
         <Container maxWidth="lg">
           <Typography variant="h6" align="center" gutterBottom>
-            Stock Simulator
+            {t('brand')}
           </Typography>
           <Typography
             variant="subtitle1"
@@ -486,7 +478,7 @@ const features = [
             color="textSecondary"
             component="p"
           >
-            Aprende a invertir sin riesgos
+            {t('landing.footerTagline')}
           </Typography>
           <Typography
             variant="body2"
@@ -494,8 +486,7 @@ const features = [
             align="center"
             sx={{ mt: 2 }}
           >
-            © {new Date().getFullYear()} Stock Simulator. Todos los derechos
-            reservados.
+            {t('landing.footerRights', { year: new Date().getFullYear() })}
           </Typography>
         </Container>
       </Box>

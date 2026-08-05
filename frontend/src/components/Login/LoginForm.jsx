@@ -14,8 +14,10 @@ import {
   useTheme
 } from "@mui/material";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
+import { useTranslation } from "react-i18next";
 
 function LoginForm() {
+  const { t } = useTranslation();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -26,7 +28,7 @@ function LoginForm() {
     setError("");
     
     if (!email || !password) {
-      setError("Por favor llena todos los campos");
+      setError(t("login.fillFields"));
       return;
     }
     
@@ -47,11 +49,11 @@ function LoginForm() {
         
         navigate("/transacciones");
       } else {
-        setError("Error: No se recibió token");
+        setError(t("login.noToken"));
       }
     } catch (error) {
       console.error("Error en login:", error);
-      setError("Error en login. Revisa tus credenciales.");
+      setError(t("login.loginError"));
     }
   };
 
@@ -118,7 +120,7 @@ function LoginForm() {
             <LockOutlinedIcon />
           </Avatar>
           <Typography component="h1" variant="h4" mb={3}>
-            Iniciar Sesión
+            {t("login.title")}
           </Typography>
           
           <Box component="form" onSubmit={handleLogin} sx={{ width: '100%' }}>
@@ -127,7 +129,7 @@ function LoginForm() {
               required
               fullWidth
               id="email"
-              label="Email"
+              label={t("login.email")}
               name="email"
               autoComplete="email"
               value={email}
@@ -138,7 +140,7 @@ function LoginForm() {
               required
               fullWidth
               name="password"
-              label="Contraseña"
+              label={t("login.password")}
               type="password"
               id="password"
               autoComplete="current-password"
@@ -154,12 +156,12 @@ function LoginForm() {
               variant="contained"
               sx={{ mt: 3, mb: 2 }}
             >
-              Iniciar Sesión
+              {t("login.title")}
             </Button>
             
             <Divider sx={{ my: 2 }}>
               <Typography variant="body2" color="text.secondary">
-                o
+                {t("common.or")}
               </Typography>
             </Divider>
             
@@ -172,7 +174,7 @@ function LoginForm() {
                   variant="outlined"
                   sx={{ borderRadius: 2, py: 1.2 }}
                 >
-                  Crear una cuenta
+                  {t("login.createAccount")}
                 </Button>
               </Grid>
               <Grid item xs={12}>
@@ -183,7 +185,7 @@ function LoginForm() {
                   color="error"
                   sx={{ mt: 1, borderRadius: 2 }}
                 >
-                  Cerrar sesión
+                  {t("common.logout")}
                 </Button>
               </Grid>
             </Grid>

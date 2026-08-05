@@ -8,8 +8,10 @@ import {
   Button,
   CircularProgress,
 } from '@mui/material';
+import { useTranslation } from 'react-i18next';
 
 const DeleteConfirmationDialog = ({ open, onClose, onConfirm, isDeleting }) => {
+  const { t } = useTranslation();
   return (
     <Dialog
       open={open}
@@ -18,16 +20,16 @@ const DeleteConfirmationDialog = ({ open, onClose, onConfirm, isDeleting }) => {
       aria-describedby="alert-dialog-description"
     >
       <DialogTitle id="alert-dialog-title">
-        Confirmar eliminación
+        {t('deleteDialog.title')}
       </DialogTitle>
       <DialogContent>
         <DialogContentText id="alert-dialog-description">
-          ¿Estás seguro de que deseas eliminar esta noticia? Esta acción no se puede deshacer.
+          {t('deleteDialog.text')}
         </DialogContentText>
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose} color="inherit" disabled={isDeleting}>
-          Cancelar
+          {t('common.cancel')}
         </Button>
         <Button
           onClick={onConfirm}
@@ -36,7 +38,7 @@ const DeleteConfirmationDialog = ({ open, onClose, onConfirm, isDeleting }) => {
           disabled={isDeleting}
           startIcon={isDeleting ? <CircularProgress size={20} color="inherit" /> : null}
         >
-          {isDeleting ? 'Eliminando...' : 'Eliminar'}
+          {isDeleting ? t('deleteDialog.deleting') : t('deleteDialog.delete')}
         </Button>
       </DialogActions>
     </Dialog>

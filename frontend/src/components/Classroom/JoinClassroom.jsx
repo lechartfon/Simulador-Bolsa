@@ -12,8 +12,10 @@ import {
 } from '@mui/material';
 import JoinFullIcon from '@mui/icons-material/JoinFull';
 import VpnKeyIcon from '@mui/icons-material/VpnKey';
+import { useTranslation } from 'react-i18next';
 
 const JoinClassroom = ({ onClassroomJoined }) => {
+  const { t } = useTranslation();
   const [code, setCode] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -22,7 +24,7 @@ const JoinClassroom = ({ onClassroomJoined }) => {
     e.preventDefault();
     
     if (!code.trim()) {
-      setError('El código de la clase es obligatorio');
+      setError(t('joinClassroom.codeRequired'));
       return;
     }
 
@@ -47,9 +49,9 @@ const JoinClassroom = ({ onClassroomJoined }) => {
       setIsLoading(false);
       console.error('Error al unirse a la clase:', error);
       if (error.response && error.response.data) {
-        setError(error.response.data.detail || 'Error al unirse a la clase');
+        setError(error.response.data.detail || t('joinClassroom.joinError'));
       } else {
-        setError('Error al conectar con el servidor');
+        setError(t('joinClassroom.serverError'));
       }
     }
   };
@@ -58,7 +60,7 @@ const JoinClassroom = ({ onClassroomJoined }) => {
     <Box>
       <Typography variant="h6" gutterBottom>
         <JoinFullIcon sx={{ verticalAlign: 'middle', mr: 1 }} />
-        Unirse a una Clase
+        {t('joinClassroom.title')}
       </Typography>
       <Divider sx={{ mb: 2 }} />
       
@@ -68,14 +70,14 @@ const JoinClassroom = ({ onClassroomJoined }) => {
           required
           fullWidth
           id="classCode"
-          label="Código de la Clase"
+          label={t('joinClassroom.codeLabel')}
           name="classCode"
           autoComplete="off"
           value={code}
           onChange={(e) => setCode(e.target.value.toUpperCase())}
-          placeholder="Ej: ABC123"
+          placeholder={t('joinClassroom.codePlaceholder')}
           disabled={isLoading}
-          helperText="Introduce el código que te ha proporcionado tu profesor"
+          helperText={t('joinClassroom.codeHelper')}
           InputProps={{
             startAdornment: (
               <InputAdornment position="start">
@@ -100,7 +102,7 @@ const JoinClassroom = ({ onClassroomJoined }) => {
           disabled={isLoading}
           startIcon={isLoading ? <CircularProgress size={20} /> : <JoinFullIcon />}
         >
-          {isLoading ? 'Uniéndose...' : 'Unirse a Clase'}
+          {isLoading ? t('joinClassroom.joining') : t('joinClassroom.join')}
         </Button>
       </Box>
     </Box>
