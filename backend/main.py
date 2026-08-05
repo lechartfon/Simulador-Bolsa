@@ -21,7 +21,7 @@ app = FastAPI()
 # Configurar CORS para el frontend
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],
+    allow_origins=["http://localhost:5173", "*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -33,7 +33,12 @@ app.include_router(stocks_router, prefix="")
 app.include_router(classroom_router, prefix="")
 app.include_router(news_router, prefix="")
 
+<<<<<<< HEAD
+# Las tablas se gestionan mediante migraciones de Supabase
+# Base.metadata.create_all(bind=engine)
+=======
 Base.metadata.create_all(bind=engine)
+>>>>>>> 505dd6d55ce3dfaadeb643ea13482eaaf8115fe0
 
 def initialize_default_companies():
     db = SessionLocal()
