@@ -19,7 +19,7 @@ const FormularioRegistro = () => {
   const { t } = useTranslation();
   const [datosFormulario, setDatosFormulario] = useState({
     correo: "",
-    ***REMOVED***: "",
+    contrasena: "",
     confirmarContrasena: "",
   });
 
@@ -47,31 +47,31 @@ const FormularioRegistro = () => {
 
     setDatosFormulario(formularioActualizado);
 
-    if (name === "***REMOVED***") {
+    if (name === "contrasena") {
       validarContrasena(value);
       validarConfirmacion(value, formularioActualizado.confirmarContrasena);
     } else if (name === "confirmarContrasena") {
-      validarConfirmacion(datosFormulario.***REMOVED***, value);
+      validarConfirmacion(datosFormulario.contrasena, value);
     }
   };
-  const validarContrasena = (***REMOVED***) => {
+  const validarContrasena = (contrasena) => {
     let puntos = 0;
     let mensaje = "";
 
-    if (validadores.longitud.test(***REMOVED***)) puntos += 25;
-    if (validadores.numero.test(***REMOVED***)) puntos += 25;
-    if (validadores.mayuscula.test(***REMOVED***)) puntos += 25;
-    if (validadores.minuscula.test(***REMOVED***)) puntos += 25;
+    if (validadores.longitud.test(contrasena)) puntos += 25;
+    if (validadores.numero.test(contrasena)) puntos += 25;
+    if (validadores.mayuscula.test(contrasena)) puntos += 25;
+    if (validadores.minuscula.test(contrasena)) puntos += 25;
 
     if (puntos === 100) {
       mensaje = t("register.passwordValid");
-    } else if (!validadores.longitud.test(***REMOVED***)) {
+    } else if (!validadores.longitud.test(contrasena)) {
       mensaje = t("register.passwordLength");
-    } else if (!validadores.numero.test(***REMOVED***)) {
+    } else if (!validadores.numero.test(contrasena)) {
       mensaje = t("register.passwordNumber");
-    } else if (!validadores.mayuscula.test(***REMOVED***)) {
+    } else if (!validadores.mayuscula.test(contrasena)) {
       mensaje = t("register.passwordUppercase");
-    } else if (!validadores.minuscula.test(***REMOVED***)) {
+    } else if (!validadores.minuscula.test(contrasena)) {
       mensaje = t("register.passwordLowercase");
     }
 
@@ -79,8 +79,8 @@ const FormularioRegistro = () => {
     setMensajeContrasena(mensaje);
   };
 
-  const validarConfirmacion = (***REMOVED***, confirmarContrasena) => {
-    if (***REMOVED*** === confirmarContrasena && ***REMOVED*** !== "") {
+  const validarConfirmacion = (contrasena, confirmarContrasena) => {
+    if (contrasena === confirmarContrasena && contrasena !== "") {
       setMensajeConfirmacion(t("register.passwordsMatch"));
     } else {
       setMensajeConfirmacion(t("register.passwordsNoMatch"));
@@ -98,7 +98,7 @@ const FormularioRegistro = () => {
 
     if (
       fuerzaContrasena !== 100 ||
-      datosFormulario.***REMOVED*** !== datosFormulario.confirmarContrasena
+      datosFormulario.contrasena !== datosFormulario.confirmarContrasena
     ) {
       setErrorEnvio(t("register.fixErrors"));
       return; 
@@ -108,7 +108,7 @@ const FormularioRegistro = () => {
 
     const datosUsuario = {
       email: datosFormulario.correo.trim(),
-      password: datosFormulario.***REMOVED***,
+      password: datosFormulario.contrasena,
     };
 
     try {
@@ -193,11 +193,11 @@ const FormularioRegistro = () => {
               margin="normal"
               required
               fullWidth
-              name="***REMOVED***"
+              name="contrasena"
               label={t("register.password")}
               type="password"
-              id="***REMOVED***"
-              value={datosFormulario.***REMOVED***}
+              id="contrasena"
+              value={datosFormulario.contrasena}
               onChange={manejarCambio}
               variant="outlined"
               size="large"
@@ -241,7 +241,7 @@ const FormularioRegistro = () => {
             
             <Typography 
               variant="caption" 
-              color={datosFormulario.***REMOVED*** === datosFormulario.confirmarContrasena && datosFormulario.confirmarContrasena !== "" 
+              color={datosFormulario.contrasena === datosFormulario.confirmarContrasena && datosFormulario.confirmarContrasena !== "" 
                 ? "success.main" 
                 : "error"}
               sx={{ mt: 1, display: 'block', mb: 2 }}
