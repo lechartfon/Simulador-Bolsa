@@ -1,4 +1,4 @@
-﻿# Dependencias directas del backend (MySQL local + FastAPI)
+# Dependencias directas del backend (MySQL local + FastAPI)
 alembic==1.16.5
 bcrypt==4.3.0
 cryptography==50.0.0
@@ -6,7 +6,7 @@ fastapi==0.115.12
 httpx==0.28.1
 passlib==1.7.4
 pydantic==2.11.4
-PyMySQL==1.1.1
+PyMySQL==1.2.0
 pytest==8.3.5
 python-dotenv==1.1.0
 python-jose==3.5.0
