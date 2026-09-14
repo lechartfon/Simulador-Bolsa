@@ -139,14 +139,19 @@ def seed_demo_activity(db: Session, companies: dict[str, Company]) -> None:
             db.add(ClassroomMembership(user_id=u.id, classroom_id=classroom.id, is_teacher=teacher))
     db.commit()
 
+    examples = [
+        ("Cómo leer un gráfico de acciones", "Guía educativa local sobre velas, volumen y medias móviles.", "https://example.com/guia-graficos", "https://picsum.photos/seed/bolsa-graficos/800/400"),
+        ("Qué es la diversificación", "Ejemplo educativo: repartir compras entre empresas reduce riesgo.", "https://example.com/diversificacion", "https://picsum.photos/seed/bolsa-diversificacion/800/400"),
+        ("Cómo funciona esta demo", "Los precios son sintéticos y solo sirven para practicar en local.", "https://example.com/demo-local", "https://picsum.photos/seed/bolsa-demo/800/400"),
+    ]
     if db.query(News).count() == 0:
-        examples = [
-            ("Cómo leer un gráfico de acciones", "Guía educativa local sobre velas, volumen y medias móviles.", "https://example.com/guia-graficos", None),
-            ("Qué es la diversificación", "Ejemplo educativo: repartir compras entre empresas reduce riesgo.", "https://example.com/diversificacion", None),
-            ("Cómo funciona esta demo", "Los precios son sintéticos y solo sirven para practicar en local.", "https://example.com/demo-local", None),
-        ]
         for title, content, url, image in examples:
             db.add(News(title=title, content=content, url=url, image_url=image, created_by=admin.id))
+        db.commit()
+    else:
+        # Rellena imágenes en noticias del seed creadas sin imagen (idempotente).
+        for title, _content, _url, image in examples:
+            db.query(News).filter(News.title == title, News.image_url.is_(None)).update({News.image_url: image})
         db.commit()
 
     if db.query(Transaction).count() == 0:

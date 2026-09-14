@@ -192,7 +192,7 @@ const features = [
         </Container>
       </Box>      
       {/* Lista de funcionalidades */}
-      <Box sx={{ py: 8 }} maxWidth="lg">
+      <Container maxWidth="lg" sx={{ py: 8 }}>
         <Typography variant="h3" component="h2" align="center" gutterBottom>
           {t('landing.featuresTitle')}
         </Typography>
@@ -209,25 +209,19 @@ const features = [
         <Grid container spacing={4} alignItems="stretch" justifyContent="center">
           {features.map((feature, index) => (
             <Grid
-              item
               key={index}
-              xs={12}
-              sm={6}
-              sx={{ 
-                display: "flex", 
+              size={{ xs: 12, sm: 6, md: 4 }}
+              sx={{
+                display: "flex",
                 justifyContent: "center",
-                [theme.breakpoints.down("sm")]: {
-                  display: "flex",
-                  justifyContent: "center",
-                }
               }}
             >
               <Card                sx={{
                   display: "flex",
                   flexDirection: "column",
                   width: "100%",
-                  minWidth: { xs: "90%", sm: 584 },
-                  maxWidth: { xs: "90%", sm: 584 },
+                  maxWidth: 380,
+                  mx: "auto",
                   // Animación simplificada
                   "&:hover": {
                     boxShadow: "0 8px 12px rgba(0, 0, 0, 0.2)",
@@ -272,7 +266,7 @@ const features = [
             </Grid>
           ))}
         </Grid>
-      </Box>
+      </Container>
     {/* Sección Cómo Funciona */}
       <Box sx={{ bgcolor: "background.paper", py: 8 }}>
         <Container maxWidth="lg">
@@ -290,18 +284,11 @@ const features = [
           </Typography>
 
           <Grid container spacing={4} alignItems="stretch" justifyContent="center">
-            <Grid 
-              item 
-              xs={12} 
-              sm={6} 
-              md={4} 
-              sx={{ 
-                display: "flex", 
+            <Grid
+              size={{ xs: 12, sm: 6, md: 4 }}
+              sx={{
+                display: "flex",
                 justifyContent: "center",
-                [theme.breakpoints.down("sm")]: {
-                  display: "flex",
-                  justifyContent: "center",
-                }
               }}
             >
               <Paper
@@ -310,8 +297,8 @@ const features = [
                   p: 4,
                   textAlign: "center",
                   width: "100%",
-                  minWidth: { xs: "90%", sm: 300 },
-                  maxWidth: { xs: "90%", sm: 300 },
+                  maxWidth: 340,
+                  mx: "auto",
                   display: "flex",
                   flexDirection: "column",
                   justifyContent: "flex-start",
@@ -336,18 +323,11 @@ const features = [
                 </Typography>
               </Paper>
             </Grid>
-            <Grid 
-              item 
-              xs={12} 
-              sm={6} 
-              md={4} 
-              sx={{ 
-                display: "flex", 
+            <Grid
+              size={{ xs: 12, sm: 6, md: 4 }}
+              sx={{
+                display: "flex",
                 justifyContent: "center",
-                [theme.breakpoints.down("sm")]: {
-                  display: "flex",
-                  justifyContent: "center",
-                }
               }}
             >
               <Paper
@@ -356,8 +336,8 @@ const features = [
                   p: 4,
                   textAlign: "center",
                   width: "100%",
-                  minWidth: { xs: "90%", sm: 300 },
-                  maxWidth: { xs: "90%", sm: 300 },
+                  maxWidth: 340,
+                  mx: "auto",
                   display: "flex",
                   flexDirection: "column",
                   justifyContent: "flex-start",
@@ -383,18 +363,11 @@ const features = [
                 </Typography>
               </Paper>
             </Grid>
-            <Grid 
-              item 
-              xs={12} 
-              sm={6} 
-              md={4} 
-              sx={{ 
-                display: "flex", 
+            <Grid
+              size={{ xs: 12, sm: 6, md: 4 }}
+              sx={{
+                display: "flex",
                 justifyContent: "center",
-                [theme.breakpoints.down("sm")]: {
-                  display: "flex",
-                  justifyContent: "center",
-                }
               }}
             >
               <Paper
@@ -403,8 +376,8 @@ const features = [
                   p: 4,
                   textAlign: "center",
                   width: "100%",
-                  minWidth: { xs: "90%", sm: 300 },
-                  maxWidth: { xs: "90%", sm: 300 },
+                  maxWidth: 340,
+                  mx: "auto",
                   display: "flex",
                   flexDirection: "column",
                   justifyContent: "flex-start",

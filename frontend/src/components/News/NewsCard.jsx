@@ -1,6 +1,7 @@
 import React from 'react';
 import { Card, CardContent, CardMedia, Typography, Button, CardActions, Box } from '@mui/material';
 import { styled } from '@mui/material/styles';
+import NewspaperIcon from '@mui/icons-material/Newspaper';
 import { useTranslation } from 'react-i18next';
 
 const StyledCard = styled(Card)(() => ({
@@ -58,8 +59,23 @@ const NewsCard = ({ news, isAdmin, onEdit, onDelete }) => {
 
   return (
     <StyledCard elevation={3}>
-      {news.image_url && isHttpUrl(news.image_url) && (
+      {news.image_url && isHttpUrl(news.image_url) ? (
         <StyledMedia image={news.image_url} title={news.title} role="img" aria-label={news.title} />
+      ) : (
+        <Box
+          role="img"
+          aria-label={news.title}
+          sx={{
+            height: 200,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            bgcolor: 'primary.light',
+            color: 'white',
+          }}
+        >
+          <NewspaperIcon sx={{ fontSize: 64 }} />
+        </Box>
       )}
       <StyledContent>
         <Typography gutterBottom variant="h5" component="div">
