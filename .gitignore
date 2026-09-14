@@ -6,11 +6,21 @@ frontend/.DS_Store
 
 # === Python (FastAPI backend) ===
 backend/__pycache__/
+backend/**/__pycache__/
 backend/*.pyc
+backend/**/*.pyc
+backend/*.pyo
+backend/**/*.pyo
 backend/.env
 backend/venv/
+backend/.venv/
 backend/env/
 backend/.DS_Store
+backend/.pytest_cache/
+backend/**/test_api.db
+.pytest_cache/
+.venv/
+venv/
 
 # === General / global ===
 *.log
@@ -18,6 +28,8 @@ backend/.DS_Store
 *.db
 .env
 *.env.*
+!.env.example
+!backend/.env.example
 .DS_Store
 Thumbs.db
 *.bak
@@ -32,3 +44,11 @@ Thumbs.db
 # === OS-specific ===
 ehthumbs.db
 Icon?
+
+# === Certs / keys (nunca versionar) ===
+*.pem
+*.key
+*.p12
+*.pfx
+*.crt
+*.cer

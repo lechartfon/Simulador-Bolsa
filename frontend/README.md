@@ -1,12 +1,22 @@
-# React + Vite
+# Frontend — Simulador de Bolsa
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+React + Vite + MUI. Usa el cliente centralizado `src/lib/api.js` con `VITE_API_BASE_URL` (por defecto `/api`).
 
-Currently, two official plugins are available:
+## Desarrollo local (modo host)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+```powershell
+npm ci
+npm run dev
+```
 
-## Expanding the ESLint configuration
+Vite proxya `/api` a `http://localhost:8000` (ver `vite.config.js`).
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## Producción local (Docker)
+
+El `Dockerfile` compila con `VITE_API_BASE_URL=/api` y sirve con Nginx, que proxya `/api/` al backend.
+
+## Scripts
+
+- `npm run dev`: desarrollo
+- `npm run lint`: ESLint (0 errores)
+- `npm run build`: build de producción

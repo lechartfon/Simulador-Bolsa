@@ -1,20 +1,18 @@
 import { useState, useEffect } from "react";
-import axios from "axios";
 import { useNavigate, Link } from "react-router-dom";
 import {
   Box,
   Typography,
   TextField,
   Button,
-  Paper,
   Avatar,
   Grid,
   Alert,
-  Divider,
-  useTheme
+  Divider
 } from "@mui/material";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import { useTranslation } from "react-i18next";
+import { api } from "../../lib/api";
 
 function LoginForm() {
   const { t } = useTranslation();
@@ -22,37 +20,33 @@ function LoginForm() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const navigate = useNavigate();
-  const theme = useTheme();
   const handleLogin = async (e) => {
     e.preventDefault();
     setError("");
-    
-    if (!email || !password) {
+
+    if (!email.trim() || !password) {
       setError(t("login.fillFields"));
       return;
     }
-    
+
     try {
-      console.log("Intentando login con:", email);
-      
-      const res = await axios.post("http://localhost:8000/login", {
-        username: email, 
-        password: password,
+      const res = await api.post("/login", {
+        username: email.trim(),
+        password,
       });
-      
+
       if (res.data.access_token) {
         localStorage.setItem("token", res.data.access_token);
-        
+
         if (res.data.user) {
           localStorage.setItem("user", JSON.stringify(res.data.user));
         }
-        
+
         navigate("/transacciones");
       } else {
         setError(t("login.noToken"));
       }
-    } catch (error) {
-      console.error("Error en login:", error);
+    } catch {
       setError(t("login.loginError"));
     }
   };

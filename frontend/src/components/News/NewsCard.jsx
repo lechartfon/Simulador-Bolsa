@@ -3,7 +3,7 @@ import { Card, CardContent, CardMedia, Typography, Button, CardActions, Box } fr
 import { styled } from '@mui/material/styles';
 import { useTranslation } from 'react-i18next';
 
-const StyledCard = styled(Card)(({ theme }) => ({
+const StyledCard = styled(Card)(() => ({
   display: 'flex',
   flexDirection: 'column',
   height: '100%',
@@ -13,16 +13,16 @@ const StyledCard = styled(Card)(({ theme }) => ({
   },
 }));
 
-const StyledMedia = styled(CardMedia)(({ theme }) => ({
+const StyledMedia = styled(CardMedia)(() => ({
   height: 200,
   backgroundSize: 'cover',
 }));
 
-const StyledContent = styled(CardContent)(({ theme }) => ({
+const StyledContent = styled(CardContent)(() => ({
   flexGrow: 1,
 }));
 
-const TruncatedText = styled(Typography)(({ theme }) => ({
+const TruncatedText = styled(Typography)(() => ({
   display: '-webkit-box',
   WebkitLineClamp: 3,
   WebkitBoxOrient: 'vertical',
@@ -30,10 +30,21 @@ const TruncatedText = styled(Typography)(({ theme }) => ({
   textOverflow: 'ellipsis',
 }));
 
+function isHttpUrl(value) {
+  try {
+    const parsed = new URL(value);
+    return parsed.protocol === 'http:' || parsed.protocol === 'https:';
+  } catch {
+    return false;
+  }
+}
+
 const NewsCard = ({ news, isAdmin, onEdit, onDelete }) => {
   const { t, i18n } = useTranslation();
   const handleReadMore = () => {
-    window.open(news.url, '_blank', 'noopener,noreferrer');
+    if (isHttpUrl(news.url)) {
+      window.open(news.url, '_blank', 'noopener,noreferrer');
+    }
   };
 
   const formatDate = (dateString) => {
@@ -47,10 +58,9 @@ const NewsCard = ({ news, isAdmin, onEdit, onDelete }) => {
 
   return (
     <StyledCard elevation={3}>
-      <StyledMedia
-        image={news.image_url}
-        title={news.title}
-      />
+      {news.image_url && isHttpUrl(news.image_url) && (
+        <StyledMedia image={news.image_url} title={news.title} role="img" aria-label={news.title} />
+      )}
       <StyledContent>
         <Typography gutterBottom variant="h5" component="div">
           {news.title}
@@ -63,7 +73,7 @@ const NewsCard = ({ news, isAdmin, onEdit, onDelete }) => {
         </Typography>
       </StyledContent>
       <CardActions sx={{ justifyContent: 'space-between', pb: 2, px: 2 }}>
-        <Button size="small" color="primary" onClick={handleReadMore}>
+        <Button size="small" color="primary" onClick={handleReadMore} disabled={!isHttpUrl(news.url)}>
           {t('newsCard.readMore')}
         </Button>
         {isAdmin && (
@@ -81,4 +91,4 @@ const NewsCard = ({ news, isAdmin, onEdit, onDelete }) => {
   );
 };
 
-export default NewsCard; 
+export default NewsCard;

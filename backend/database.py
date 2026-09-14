@@ -1,29 +1,18 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
-import os
-from dotenv import load_dotenv
 
-load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), '.env'))
+from config import APP_ENV, DATABASE_URL
 
-# Opción 1: URL completa de conexión (recomendado)
-DATABASE_URL = os.getenv("DATABASE_URL")
-
-# Opción 2: Construir URL desde componentes (fallback)
-if not DATABASE_URL:
-    SUPABASE_URL = os.getenv("SUPABASE_URL")
-    SUPABASE_DB_PASSWORD = os.getenv("SUPABASE_DB_PASSWORD")
-    if SUPABASE_URL and SUPABASE_DB_PASSWORD:
-        host = f"db.{SUPABASE_URL.replace('https://', '')}"
-        DATABASE_URL = f"postgresql+psycopg2://postgres:{SUPABASE_DB_PASSWORD}@{host}:5432/postgres"
-
-if not DATABASE_URL:
-    raise ValueError("Configura DATABASE_URL o SUPABASE_URL + SUPABASE_DB_PASSWORD en .env")
-
-print("DATABASE_URL:", DATABASE_URL[:30] + "..." + DATABASE_URL[-20:])
-
-engine = create_engine(DATABASE_URL, echo=True)
+# Solo MySQL local. Sin fallback a Supabase/Postgres.
+engine = create_engine(
+    DATABASE_URL,
+    echo=False,
+    pool_pre_ping=True,
+    pool_recycle=3600,
+)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
+
 
 def get_db():
     db = SessionLocal()
@@ -31,3 +20,7 @@ def get_db():
         yield db
     finally:
         db.close()
+
+
+def is_local_env() -> bool:
+    return APP_ENV == "local"

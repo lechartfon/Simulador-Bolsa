@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import { api } from '../lib/api';
 import '../App.css';
 import ClassroomList from '../components/Classroom/ClassroomList';
 import CreateClassroom from '../components/Classroom/CreateClassroom';
@@ -37,19 +37,9 @@ const Classroom = () => {
 
   const fetchMyClassrooms = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const authAxios = axios.create({
-        baseURL: 'http://localhost:8000',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
-
-      const response = await authAxios.get('/classrooms/my');
+      const response = await api.get('/classrooms/my');
       setClassrooms(response.data);
     } catch (error) {
-      console.error('Error al obtener clases:', error);
       if (error.response && error.response.status === 401) {
         localStorage.removeItem('token');
         navigate('/login');
@@ -103,13 +93,13 @@ const Classroom = () => {
         </Snackbar>        
         <Grid container spacing={3}>
           <Grid item xs={12} md={4}>
-            <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column', height: '100%',  width: '100vh' }}>
+            <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column', height: '100%',  width: '100%' }}>
               <CreateClassroom onClassroomCreated={handleClassroomCreated} />
             </Paper>
           </Grid>
           
           <Grid item xs={12} md={8}>
-            <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column', height: '100%', width: '100vh' }}>
+            <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column', height: '100%', width: '100%' }}>
               <JoinClassroom onClassroomJoined={handleClassroomJoined} />
             </Paper>
           </Grid>

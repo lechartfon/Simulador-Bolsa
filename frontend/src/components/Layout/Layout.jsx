@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { 
   Box, 
   AppBar, 
@@ -23,7 +23,7 @@ import ClassIcon from '@mui/icons-material/Class';
 import NewspaperIcon from '@mui/icons-material/Newspaper';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import MenuIcon from '@mui/icons-material/Menu';
-import axios from 'axios';
+import { api } from '../../lib/api';
 import { useTranslation } from 'react-i18next';
 import LanguageSelector from '../LanguageSelector';
 
@@ -70,17 +70,13 @@ const Layout = ({ children }) => {
       const token = localStorage.getItem('token');
       if (!token) return;
       
-      const response = await axios.get('http://localhost:8000/wallet', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
+      const response = await api.get('/wallet');
       
-      if (response.data && response.data.balance) {
+      if (response.data && response.data.balance != null) {
         setWalletBalance(response.data.balance);
       }
-    } catch (error) {
-      console.error(t('layout.balanceError'), error);
+    } catch {
+      // ignorar error de saldo
     }
   };
 

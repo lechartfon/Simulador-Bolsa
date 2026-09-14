@@ -1,32 +1,56 @@
-from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.orm import Session
-from typing import List, Optional
-from pydantic import BaseModel
+import logging
 from datetime import datetime
+from typing import List, Optional
+from urllib.parse import urlparse
+
+from fastapi import APIRouter, Depends, HTTPException, Query, status
+from pydantic import BaseModel, Field
+from sqlalchemy.orm import Session
+
+from auth import get_admin_user, get_current_user
 from database import get_db
 from models import News, User
-from auth import get_current_user, get_admin_user
 
-router = APIRouter(
-    prefix="/news",
-    tags=["news"],
-)
+logger = logging.getLogger(__name__)
+
+router = APIRouter(prefix="/news", tags=["news"])
+
+
+def _validate_url(value: Optional[str], *, required: bool, max_length: int = 500) -> Optional[str]:
+    if value is None:
+        if required:
+            raise HTTPException(status_code=400, detail="URL no válida")
+        return None
+    v = value.strip()
+    if required and not v:
+        raise HTTPException(status_code=400, detail="URL no válida")
+    if not v:
+        return None
+    if len(v) > max_length:
+        raise HTTPException(status_code=400, detail="URL demasiado larga")
+    parsed = urlparse(v)
+    if parsed.scheme not in ("http", "https") or not parsed.netloc:
+        raise HTTPException(status_code=400, detail="Solo se permiten URLs http(s)")
+    return v
+
 
 class NewsBase(BaseModel):
-    title: str  
-    content: str  
-    url: str  
-    image_url: Optional[str] = None 
+    title: str = Field(min_length=1, max_length=200)
+    content: str = Field(min_length=1, max_length=2000)
+    url: str = Field(min_length=1, max_length=500)
+    image_url: Optional[str] = Field(default=None, max_length=500)
+
 
 class NewsCreate(NewsBase):
-    pass 
+    pass
 
 
 class NewsUpdate(BaseModel):
-    title: Optional[str] = None  
-    content: Optional[str] = None
-    url: Optional[str] = None
-    image_url: Optional[str] = None
+    title: Optional[str] = Field(default=None, min_length=1, max_length=200)
+    content: Optional[str] = Field(default=None, min_length=1, max_length=2000)
+    url: Optional[str] = Field(default=None, min_length=1, max_length=500)
+    image_url: Optional[str] = Field(default=None, max_length=500)
+
 
 class NewsResponse(NewsBase):
     id: int
@@ -34,119 +58,74 @@ class NewsResponse(NewsBase):
     updated_at: datetime
     created_by: int
 
-    class Config:
-        from_attributes = True 
+    model_config = {"from_attributes": True}
+
 
 @router.get("/", response_model=List[NewsResponse])
 def get_all_news(
-    skip: int = 0,
-    limit: int = 100,
-    db: Session = Depends(get_db)
+    skip: int = Query(0, ge=0, le=10000),
+    limit: int = Query(100, ge=1, le=100),
+    db: Session = Depends(get_db),
 ):
-    
-    noticias = db.query(News).offset(skip).limit(limit).all()
-    return noticias
+    return db.query(News).order_by(News.created_at.desc()).offset(skip).limit(limit).all()
+
 
 @router.get("/{news_id}", response_model=NewsResponse)
 def get_news(news_id: int, db: Session = Depends(get_db)):
-    
     noticia = db.query(News).filter(News.id == news_id).first()
-    
-   
     if noticia is None:
-        print(f"No se encontró noticia con ID: {news_id}")
         raise HTTPException(status_code=404, detail="No encontramos esa noticia")
-    
     return noticia
 
+
 @router.post("/", response_model=NewsResponse, status_code=status.HTTP_201_CREATED)
-def create_news(
-    news: NewsCreate,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_admin_user)
-):
-    print(f"Creando noticia: {news.title}")
-    
-    # Crear objeto de noticia
-    nueva_noticia = News(
-        title=news.title,
-        content=news.content,
-        url=news.url,
-        image_url=news.image_url,
-        created_by=current_user.id  
+def create_news(news: NewsCreate, db: Session = Depends(get_db), current_user: User = Depends(get_admin_user)):
+    nueva = News(
+        title=news.title.strip(),
+        content=news.content.strip(),
+        url=_validate_url(news.url, required=True),
+        image_url=_validate_url(news.image_url, required=False),
+        created_by=current_user.id,
     )
-    
-    # Guardar en la base de datos
-    db.add(nueva_noticia)
+    db.add(nueva)
     db.commit()
-    db.refresh(nueva_noticia)
-    
-    print(f"Noticia creada con ID: {nueva_noticia.id}")
-    return nueva_noticia
+    db.refresh(nueva)
+    return nueva
+
 
 @router.put("/{news_id}", response_model=NewsResponse)
-def update_news(
-    news_id: int,
-    news_update: NewsUpdate,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_admin_user)
-):
-    # Buscar la noticia que queremos actualizar
+def update_news(news_id: int, news_update: NewsUpdate, db: Session = Depends(get_db), current_user: User = Depends(get_admin_user)):
     noticia = db.query(News).filter(News.id == news_id).first()
-    
-    # Comprobar que existe
     if noticia is None:
-        print(f"No se encontró la noticia con ID {news_id}")
         raise HTTPException(status_code=404, detail="No encontramos esa noticia")
-    
-    # Actualizar los campos
+
+    datos = news_update.model_dump(exclude_unset=True)
     try:
-        
-        if hasattr(news_update, "model_dump"):
-            datos = news_update.model_dump(exclude_unset=True)
-        else:
-            datos = news_update.dict(exclude_unset=True)
-        
-       
-        for campo, valor in datos.items():
-            
-            if valor is not None:
-                setattr(noticia, campo, valor)
-        
-        
+        if "title" in datos and datos["title"] is not None:
+            noticia.title = datos["title"].strip()
+        if "content" in datos and datos["content"] is not None:
+            noticia.content = datos["content"].strip()
+        if "url" in datos:
+            noticia.url = _validate_url(datos["url"], required=True)
+        if "image_url" in datos:
+            noticia.image_url = _validate_url(datos["image_url"], required=False)
         noticia.updated_at = datetime.utcnow()
-        
-        
         db.commit()
         db.refresh(noticia)
-        
-        print(f"Noticia {news_id} actualizada correctamente")
-        return noticia
-        
-    except Exception as e:
-        
+    except HTTPException:
+        raise
+    except Exception:
         db.rollback()
-        print(f"Error al actualizar la noticia: {e}")
-        raise HTTPException(
-            status_code=500,
-            detail=f"Error al actualizar la noticia: {str(e)}"
-        )
+        logger.exception("Error al actualizar noticia %s", news_id)
+        raise HTTPException(status_code=500, detail="No se pudo actualizar la noticia")
+    return noticia
+
 
 @router.delete("/{news_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_news(
-    news_id: int,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_admin_user)
-):
+def delete_news(news_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_admin_user)):
     noticia = db.query(News).filter(News.id == news_id).first()
-    
     if noticia is None:
-        print(f"No se pudo borrar: La noticia con ID {news_id} no existe")
         raise HTTPException(status_code=404, detail="No encontramos esa noticia")
-    
-    print(f"Eliminando noticia: {noticia.title} (ID: {news_id})")
     db.delete(noticia)
     db.commit()
-    
-    print(f"Noticia eliminada correctamente")
     return None

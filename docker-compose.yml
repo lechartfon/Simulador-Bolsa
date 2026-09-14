@@ -1,29 +1,108 @@
-version: '3.8'
-
 services:
-  mysql:
-    image: mysql:8.0
-    container_name: mysql_bolsa
-    restart: always
+  db:
+    image: mysql:8.0.42
+    container_name: bolsa_db
+    restart: unless-stopped
     environment:
-      MYSQL_ROOT_PASSWORD: ***REMOVED***
-      MYSQL_DATABASE: simulador_bolsa
-      MYSQL_USER: usuario
-      MYSQL_PASSWORD: ***REMOVED***
-    ports:
-      - "3306:3306"
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-local_root_123}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-simulador_bolsa}
+      MYSQL_USER: ${MYSQL_USER:-simulador}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-local_db_123}
     volumes:
       - db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD:-local_root_123}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  migrate:
+    build: ./backend
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DB_USER: ${MYSQL_USER:-simulador}
+      DB_PASSWORD: ${MYSQL_PASSWORD:-local_db_123}
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_NAME: ${MYSQL_DATABASE:-simulador_bolsa}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:-local-only-change-me-min-32-chars-1234567890}
+      APP_ENV: local
+    command: python migrate.py
+
+  seed:
+    build: ./backend
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    environment:
+      DB_USER: ${MYSQL_USER:-simulador}
+      DB_PASSWORD: ${MYSQL_PASSWORD:-local_db_123}
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_NAME: ${MYSQL_DATABASE:-simulador_bolsa}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:-local-only-change-me-min-32-chars-1234567890}
+      APP_ENV: local
+    command: python seed.py
+
+  api:
+    build: ./backend
+    container_name: bolsa_api
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+      seed:
+        condition: service_completed_successfully
+    environment:
+      DB_USER: ${MYSQL_USER:-simulador}
+      DB_PASSWORD: ${MYSQL_PASSWORD:-local_db_123}
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_NAME: ${MYSQL_DATABASE:-simulador_bolsa}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:-local-only-change-me-min-32-chars-1234567890}
+      JWT_ALGORITHM: HS256
+      JWT_EXPIRE_MINUTES: 60
+      CORS_ORIGINS: http://localhost:5173
+      APP_ENV: local
+      INITIAL_BALANCE: 50000
+    ports:
+      - "127.0.0.1:8000:8000"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/healthz', timeout=5)"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  web:
+    build:
+      context: ./frontend
+      args:
+        VITE_API_BASE_URL: /api
+    container_name: bolsa_web
+    restart: unless-stopped
+    depends_on:
+      api:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:5173:80"
 
   phpmyadmin:
-    image: phpmyadmin/phpmyadmin
-    container_name: pma_bolsa
-    restart: always
-    ports:
-      - "8080:80"
+    image: phpmyadmin:5.2.1
+    container_name: bolsa_pma
+    restart: "no"
+    profiles: ["tools"]
+    depends_on:
+      db:
+        condition: service_healthy
     environment:
-      PMA_HOST: mysql
-      MYSQL_ROOT_PASSWORD: ***REMOVED***
+      PMA_HOST: db
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-local_root_123}
+    ports:
+      - "127.0.0.1:8080:80"
 
 volumes:
   db_data:

@@ -1,23 +1,29 @@
-from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
-from database import get_db
-from models import User, Classroom, ClassroomMembership, Wallet, Transaction, StockPrice
-from auth import get_current_user
-from pydantic import BaseModel
-import random
+import logging
+import secrets
 import string
-from typing import List, Optional
-from sqlalchemy import desc, text
-from decimal import Decimal
+from typing import List
 
+from fastapi import APIRouter, Depends, HTTPException
+from pydantic import BaseModel, Field
+from sqlalchemy import desc
+from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm import Session
+
+from auth import get_current_user
+from database import get_db
+from models import Classroom, ClassroomMembership, StockPrice, Transaction, TransactionType, User, Wallet
+
+logger = logging.getLogger(__name__)
 router = APIRouter()
 
-# Modelos para las clases
+
 class ClassroomCreate(BaseModel):
-    name: str
+    name: str = Field(min_length=1, max_length=100)
+
 
 class ClassroomJoin(BaseModel):
-    code: str
+    code: str = Field(min_length=4, max_length=10)
+
 
 class ClassroomResponse(BaseModel):
     id: int
@@ -26,228 +32,158 @@ class ClassroomResponse(BaseModel):
     creator_id: int
     member_count: int
 
+
 class MemberPerformance(BaseModel):
     user_id: int
     email: str
-    initial_investment: float = 50000 
-    current_value: float  
-    profit_percentage: float 
+    initial_investment: float = 50000
+    current_value: float
+    profit_percentage: float
 
-# Función para generar códigos de clase aleatorios
-def generate_classroom_code(length=6):
-    # Usar letras mayúsculas y números
-    letras_y_numeros = string.ascii_uppercase + string.digits
-    # Escoger caracteres al azar
-    codigo = ''
-    for i in range(length):
-        codigo += random.choice(letras_y_numeros)
-    return codigo
 
-# Crear una nueva clase
+def generate_classroom_code(length: int = 6) -> str:
+    alphabet = string.ascii_uppercase + string.digits
+    return "".join(secrets.choice(alphabet) for _ in range(length))
+
+
+def mask_email(email: str) -> str:
+    if "@" not in email:
+        return "***"
+    local, _, domain = email.partition("@")
+    if "." in domain:
+        first, _, _rest = domain.partition(".")
+        domain_masked = f"{first[:1]}***" if first else "***"
+    else:
+        domain_masked = "***"
+    visible = local[:2] + "***" if len(local) > 2 else "***"
+    return f"{visible}@{domain_masked}"
+
+
 @router.post("/classrooms", response_model=ClassroomResponse)
-async def create_classroom(
-    data: ClassroomCreate,
-    user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
-):
-    codigo = generate_classroom_code()
-    # Comprobar si el código ya existe
-    clase_existe = db.query(Classroom).filter(Classroom.code == codigo).first()
-    while clase_existe:
-        print(f"El código {codigo} ya existe, generando otro")
-        codigo = generate_classroom_code()
-        clase_existe = db.query(Classroom).filter(Classroom.code == codigo).first()
-    
-    nueva_clase = Classroom(
-        name=data.name,
-        code=codigo,
-        creator_id=user.id
-    )
-    
-    db.add(nueva_clase)
-    db.commit()
-    db.refresh(nueva_clase)
-    
-    print(f"Clase creada: {nueva_clase.name} con código {nueva_clase.code}")
-    
-    # Hacer que el creador sea profesor de la clase
-    membresia = ClassroomMembership(
-        user_id=user.id,
-        classroom_id=nueva_clase.id,
-        is_teacher=True  
-    )
-    db.add(membresia)
-    db.commit()
-    
-    cantidad_miembros = db.query(ClassroomMembership).filter(
-        ClassroomMembership.classroom_id == nueva_clase.id
-    ).count()
-    
-    return {
-        "id": nueva_clase.id,
-        "name": nueva_clase.name,
-        "code": nueva_clase.code,
-        "creator_id": nueva_clase.creator_id,
-        "member_count": cantidad_miembros
-    }
+async def create_classroom(data: ClassroomCreate, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    name = data.name.strip()
+    if not name:
+        raise HTTPException(status_code=400, detail="El nombre de la clase no puede estar vacío")
 
-# Unirse a una clase existente
+    for _ in range(10):
+        code = generate_classroom_code()
+        if not db.query(Classroom).filter(Classroom.code == code).first():
+            break
+    else:
+        raise HTTPException(status_code=500, detail="No se pudo generar un código único")
+
+    nueva = Classroom(name=name, code=code, creator_id=user.id)
+    db.add(nueva)
+    try:
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(status_code=400, detail="No se pudo crear la clase")
+    db.refresh(nueva)
+
+    db.add(ClassroomMembership(user_id=user.id, classroom_id=nueva.id, is_teacher=True))
+    try:
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+
+    count = db.query(ClassroomMembership).filter(ClassroomMembership.classroom_id == nueva.id).count()
+    return {"id": nueva.id, "name": nueva.name, "code": nueva.code, "creator_id": nueva.creator_id, "member_count": count}
+
+
 @router.post("/classrooms/join")
-async def join_classroom(
-    data: ClassroomJoin,
-    user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
-):
-    clase = db.query(Classroom).filter(Classroom.code == data.code).first()
-    
+async def join_classroom(data: ClassroomJoin, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    code = data.code.strip().upper()
+    clase = db.query(Classroom).filter(Classroom.code == code).first()
     if not clase:
-        print(f"No se encontró clase con código: {data.code}")
         raise HTTPException(status_code=404, detail="No encontramos esa clase. Revisa el código.")
-    
-    ya_es_miembro = db.query(ClassroomMembership).filter(
-        ClassroomMembership.user_id == user.id,
-        ClassroomMembership.classroom_id == clase.id
-    ).first()
-    
-    if ya_es_miembro:
-        print(f"Usuario {user.email} ya es miembro de la clase {clase.name}")
-        raise HTTPException(status_code=400, detail="¡Ya eres miembro de esta clase!")
-    
-    # Crear la membresía como estudiante
-    membresia = ClassroomMembership(
-        user_id=user.id,
-        classroom_id=clase.id,
-        is_teacher=False  
+
+    exists = (
+        db.query(ClassroomMembership)
+        .filter(ClassroomMembership.user_id == user.id, ClassroomMembership.classroom_id == clase.id)
+        .first()
     )
-    
-    # Guardar en la base de datos
-    db.add(membresia)
-    db.commit()
-    
-    print(f"Usuario {user.email} se unió a la clase {clase.name}")
-    
+    if exists:
+        raise HTTPException(status_code=400, detail="¡Ya eres miembro de esta clase!")
+
+    db.add(ClassroomMembership(user_id=user.id, classroom_id=clase.id, is_teacher=False))
+    try:
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(status_code=400, detail="¡Ya eres miembro de esta clase!")
     return {"message": f"¡Te has unido a la clase {clase.name}!"}
 
-# Obtener clases en las que el usuario es miembro
-@router.get("/classrooms/my", response_model=List[ClassroomResponse])
-async def get_my_classrooms(
-    user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
-):
-    membresias = db.query(ClassroomMembership).filter(
-        ClassroomMembership.user_id == user.id
-    ).all()
-    
-    mis_clases = []
-    
-    for membresia in membresias:
-        clase = db.query(Classroom).filter(
-            Classroom.id == membresia.classroom_id
-        ).first()
-        
-        if clase:
-            cantidad_miembros = db.query(ClassroomMembership).filter(
-                ClassroomMembership.classroom_id == clase.id
-            ).count()
-            
-            mis_clases.append({
-                "id": clase.id,
-                "name": clase.name,
-                "code": clase.code,
-                "creator_id": clase.creator_id,
-                "member_count": cantidad_miembros
-            })
-    
-    print(f"Usuario {user.email} tiene {len(mis_clases)} clases")
-    return mis_clases
 
-# Obtener la tabla de clasificación para una clase
+@router.get("/classrooms/my", response_model=List[ClassroomResponse])
+async def get_my_classrooms(user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    memberships = db.query(ClassroomMembership).filter(ClassroomMembership.user_id == user.id).all()
+    if not memberships:
+        return []
+    classroom_ids = [m.classroom_id for m in memberships]
+    clases = {c.id: c for c in db.query(Classroom).filter(Classroom.id.in_(classroom_ids)).all()}
+    result = []
+    for m in memberships:
+        clase = clases.get(m.classroom_id)
+        if not clase:
+            continue
+        count = db.query(ClassroomMembership).filter(ClassroomMembership.classroom_id == clase.id).count()
+        result.append({"id": clase.id, "name": clase.name, "code": clase.code, "creator_id": clase.creator_id, "member_count": count})
+    return result
+
+
 @router.get("/classrooms/{classroom_id}/leaderboard", response_model=List[MemberPerformance])
-async def get_classroom_leaderboard(
-    classroom_id: int,
-    user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
-):
-    es_miembro = db.query(ClassroomMembership).filter(
-        ClassroomMembership.user_id == user.id,
-        ClassroomMembership.classroom_id == classroom_id
-    ).first()
-    
-    if not es_miembro:
-        print(f"Usuario {user.email} no es miembro de la clase {classroom_id}")
+async def get_classroom_leaderboard(classroom_id: int, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    member = (
+        db.query(ClassroomMembership)
+        .filter(ClassroomMembership.user_id == user.id, ClassroomMembership.classroom_id == classroom_id)
+        .first()
+    )
+    if not member:
         raise HTTPException(status_code=403, detail="No puedes ver esta clasificación porque no eres miembro de la clase")
-    
-    # Obtener todos los miembros de la clas
-    miembros = db.query(ClassroomMembership).filter(
-        ClassroomMembership.classroom_id == classroom_id
-    ).all()
-    
-    clasificacion = []
-    
-    # Para cada miembro, calcular su rendimiento
-    for miembro in miembros:
-        datos_usuario = db.query(User).filter(User.id == miembro.user_id).first()
-        if not datos_usuario:
+
+    miembros = db.query(ClassroomMembership).filter(ClassroomMembership.classroom_id == classroom_id).all()
+    member_ids = [m.user_id for m in miembros]
+    users = {u.id: u for u in db.query(User).filter(User.id.in_(member_ids)).all()} if member_ids else {}
+    wallets = {w.user_id: w for w in db.query(Wallet).filter(Wallet.user_id.in_(member_ids)).all()} if member_ids else {}
+
+    txs = db.query(Transaction).filter(Transaction.user_id.in_(member_ids)).all() if member_ids else []
+    net: dict[int, dict[int, int]] = {}
+    for t in txs:
+        user_map = net.setdefault(t.user_id, {})
+        delta = t.quantity if t.type == TransactionType.buy else -t.quantity
+        user_map[t.company_id] = user_map.get(t.company_id, 0) + delta
+
+    company_ids = sorted({cid for m in net.values() for cid, q in m.items() if q > 0})
+    prices: dict[int, float] = {}
+    if company_ids:
+        rows = (
+            db.query(StockPrice)
+            .filter(StockPrice.company_id.in_(company_ids))
+            .order_by(StockPrice.company_id, desc(StockPrice.timestamp))
+            .all()
+        )
+        for r in rows:
+            prices.setdefault(r.company_id, float(r.price))
+
+    board = []
+    for m in miembros:
+        u = users.get(m.user_id)
+        w = wallets.get(m.user_id)
+        if not u or not w:
             continue
-        
-        billetera = db.query(Wallet).filter(Wallet.user_id == miembro.user_id).first()
-        if not billetera:
-            continue
-        
-        dinero_efectivo = float(billetera.balance)
-        
-        # Consulta SQL para calcular las acciones netas por empresa
-        consulta = text("""
-            SELECT 
-                t.company_id,
-                CASE WHEN t.type = 'buy' THEN SUM(t.quantity) ELSE -SUM(t.quantity) END as cantidad_neta
-            FROM 
-                transactions as t
-            WHERE 
-                t.user_id = :user_id
-            GROUP BY 
-                t.company_id, t.type
-        """)
-        
-        resultado = db.execute(consulta, {"user_id": miembro.user_id})
-        
-        acciones_por_empresa = {}
-        for fila in resultado:
-            empresa_id = fila[0]
-            cantidad = fila[1]
-            
-            if empresa_id not in acciones_por_empresa:
-                acciones_por_empresa[empresa_id] = 0
-                
-            acciones_por_empresa[empresa_id] += cantidad
-        
-        valor_acciones = 0
-        
-        for empresa_id, cantidad in acciones_por_empresa.items():
-            if cantidad <= 0:
-                continue
-            
-            ultimo_precio = db.query(StockPrice).filter(
-                StockPrice.company_id == empresa_id
-            ).order_by(desc(StockPrice.timestamp)).first()
-            
-            if ultimo_precio:
-                precio = float(ultimo_precio.price)
-                valor_estas_acciones = precio * float(cantidad)
-                valor_acciones += valor_estas_acciones
-        
-        valor_total = dinero_efectivo + valor_acciones
-        
-        porcentaje = ((valor_total - 50000) / 50000) * 100
-        
-        clasificacion.append({
-            "user_id": datos_usuario.id,
-            "email": datos_usuario.email,
-            "initial_investment": 50000,
-            "current_value": round(valor_total, 2),
-            "profit_percentage": round(porcentaje, 2)
-        })
-    
-    clasificacion.sort(key=lambda x: x["profit_percentage"], reverse=True)
-    
-    return clasificacion
+        cash = float(w.balance)
+        stocks_value = sum(q * prices.get(cid, 0.0) for cid, q in net.get(m.user_id, {}).items() if q > 0)
+        total = cash + stocks_value
+        pct = ((total - 50000) / 50000) * 100
+        board.append(
+            {
+                "user_id": u.id,
+                "email": mask_email(u.email),
+                "initial_investment": 50000,
+                "current_value": round(total, 2),
+                "profit_percentage": round(pct, 2),
+            }
+        )
+    board.sort(key=lambda x: x["profit_percentage"], reverse=True)
+    return board

@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import { api } from '../lib/api';
 import { 
   Container, 
   Typography, 
@@ -68,20 +68,14 @@ const PortfolioPage = () => {  const [tabValue, setTabValue] = useState(0);
         return;
       }
       
-      const response = await axios.get('http://localhost:8000/wallet', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
+      const response = await api.get('/wallet');
       
-      if (response.data && response.data.balance) {
+      if (response.data && response.data.balance != null) {
         setDineroDisponible(response.data.balance);
       } else {
         setError(t('portfolio.loadBalanceError'));
       }
     } catch (error) {
-      console.error("Error al cargar el saldo:", error);
-      
       if (error.response && error.response.status === 401) {
         localStorage.removeItem('token');
         navigate('/login');
@@ -99,16 +93,10 @@ const PortfolioPage = () => {  const [tabValue, setTabValue] = useState(0);
         return;
       }
       
-      const response = await axios.get('http://localhost:8000/portfolio', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
+      const response = await api.get('/portfolio');
       
       setPortfolio(response.data);
     } catch (error) {
-      console.error("Error al cargar el portfolio:", error);
-      
       if (error.response && error.response.status === 401) {
         localStorage.removeItem('token');
         navigate('/login');
@@ -126,16 +114,10 @@ const PortfolioPage = () => {  const [tabValue, setTabValue] = useState(0);
         return;
       }
       
-      const response = await axios.get('http://localhost:8000/transacciones', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
+      const response = await api.get('/transacciones');
       
       setTransactions(response.data);
     } catch (error) {
-      console.error("Error al cargar transacciones:", error);
-      
       if (error.response && error.response.status === 401) {
         localStorage.removeItem('token');
         navigate('/login');
@@ -155,8 +137,7 @@ const PortfolioPage = () => {  const [tabValue, setTabValue] = useState(0);
       await cargarPortfolio();
       
       await cargarTransacciones();
-    } catch (error) {
-      console.error("Error al cargar datos:", error);
+    } catch {
       setError(t('portfolio.loadDataError'));
     }
     
@@ -213,16 +194,10 @@ const PortfolioPage = () => {  const [tabValue, setTabValue] = useState(0);
       const data = {
         company_id: selectedStock.company_id,
         quantity: cantidadVenta,
-        price_per_share: selectedStock.current_price
       };
       
       // Enviar petición
-      const response = await axios.post('http://localhost:8000/vender', data, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
+      const response = await api.post('/vender', data);
       
       if (response.status === 200) {
         setMensaje(t('portfolio.soldMessage', { quantity: cantidadVenta, company: selectedStock.company_name }));
@@ -236,8 +211,7 @@ const PortfolioPage = () => {  const [tabValue, setTabValue] = useState(0);
         cargarDatos();
         handleCloseVender();
       }
-    } catch (error) {
-      console.error("Error al vender:", error);
+    } catch {
       setMensaje(t('portfolio.sellError'));
       setMensajeType('error');
     }
@@ -250,6 +224,11 @@ const PortfolioPage = () => {  const [tabValue, setTabValue] = useState(0);
         <Typography variant="h4" component="h1" gutterBottom>
           {t('portfolio.title')}
         </Typography>
+        {dineroDisponible != null && (
+          <Typography variant="body1" color="text.secondary" sx={{ mb: 2 }}>
+            {t('comprar.availableMoney', { amount: `${Number(dineroDisponible).toFixed(2)}€` })}
+          </Typography>
+        )}
         
         {mensaje && (
           <Alert 
@@ -411,17 +390,15 @@ const PortfolioPage = () => {  const [tabValue, setTabValue] = useState(0);
                           <TableCell>{formatFecha(transaction.timestamp)}</TableCell>
                           <TableCell>{transaction.company_name}</TableCell>
                           <TableCell>
-                            {transaction.type === 'buy' ? t('portfolio.buy') : t('portfolio.sell')}
-                          </TableCell>
-                          <TableCell>
-                            <Chip 
-                              label={transaction.type === 'buy' ? t('portfolio.buy') : t('portfolio.sell')} 
-                              color={transaction.type === 'buy' ? 'info' : 'success'} 
-                              size="small" 
+                            <Chip
+                              label={transaction.type === 'buy' ? t('portfolio.buy') : t('portfolio.sell')}
+                              color={transaction.type === 'buy' ? 'info' : 'success'}
+                              size="small"
                             />
                           </TableCell>
                           <TableCell align="right">{transaction.quantity}</TableCell>
-                          <TableCell align="right">{transaction.price_per_share.toFixed(2)}€</TableCell>
+                          <TableCell align="right">{Number(transaction.price_per_share).toFixed(2)}€</TableCell>
+                          <TableCell align="right">{Number(transaction.total_price != null ? transaction.total_price : transaction.quantity * transaction.price_per_share).toFixed(2)}€</TableCell>
                         </TableRow>
                       ))}
                     </TableBody>

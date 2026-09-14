@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import axios from 'axios';
+import { useState } from 'react';
+import { api } from '../../lib/api';
 import {
   Box,
   Typography,
@@ -31,22 +31,12 @@ const CreateClassroom = ({ onClassroomCreated }) => {
     setError('');
 
     try {
-      const token = localStorage.getItem('token');
-      const authAxios = axios.create({
-        baseURL: 'http://localhost:8000',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
-
-      await authAxios.post('/classrooms', { name });
+      await api.post('/classrooms', { name });
       setName('');
       setIsLoading(false);
       onClassroomCreated();
     } catch (error) {
       setIsLoading(false);
-      console.error('Error al crear clase:', error);
       if (error.response && error.response.data) {
         setError(error.response.data.detail || t('createClassroom.createError'));
       } else {

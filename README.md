@@ -1,158 +1,121 @@
 # Simulador de Bolsa
 
-Este proyecto consiste en una aplicación web que simula operaciones en el mercado de acciones, con funcionalidades para competiciones de trading en aulas virtuales.
+Aplicación web educativa para simular compra/venta de acciones, con aulas virtuales, ranking y noticias. Proyecto de hobby para portfolio: **uso exclusivamente local, datos sintéticos, sin dinero real ni asesoramiento financiero**.
 
-## Requisitos previos
+## Stack
 
-Antes de comenzar, asegúrate de tener instalado en tu sistema:
+- Backend: FastAPI (Python 3.11), SQLAlchemy, Alembic, MySQL 8.0
+- Frontend: React + Vite, Material UI, Highcharts, i18n ES/EN
+- Infra local: Docker Compose (MySQL + migraciones + seed + API + web + phpMyAdmin opcional)
 
-- [Node.js](https://nodejs.org/) (v16 o superior)
-- [Python](https://www.python.org/) (v3.9 o superior)
-- [Docker](https://www.docker.com/products/docker-desktop/) y Docker Compose
-- [Git](https://git-scm.com/) (opcional, para control de versiones)
-- Un editor de código como [VS Code](https://code.visualstudio.com/)
+## Requisitos
 
-## Estructura del proyecto
+- Git
+- Docker Desktop con Compose v2
+- Navegador
+- Sin necesidad de instalar Python, Node ni MySQL en el host
 
-El proyecto está dividido en dos partes principales:
+## Inicio rápido
 
-- `backend`: API desarrollada con FastAPI (Python)
-- `frontend`: Interfaz de usuario desarrollada con React y Material UI
-
-## 1. Instrucciones de instalación
-
-### 2. Configurar la base de datos con Docker
-
-```bash
-docker-compose up -d
+```powershell
+Copy-Item .env.example .env
+docker compose up --build
 ```
 
-Esto iniciará:
-- Un servidor MySQL en el puerto 3306
-- Una instancia de phpMyAdmin en el puerto 8080 (accesible en http://localhost:8080)
+Abre:
 
-Credenciales de la base de datos:
-- Usuario: usuario
-- Contraseña: ***REMOVED***
-- Nombre de la BD: simulador_bolsa
+- App: `http://localhost:5173`
+- API Docs: `http://localhost:8000/docs`
+- Health: `http://localhost:8000/healthz`
+- phpMyAdmin (opcional): `docker compose --profile tools up -d`, luego `http://localhost:8080`
 
-### 3. Configurar el Backend
+### Credenciales demo (solo local, datos ficticios)
 
-1. Navegar al directorio del backend:
-   ```bash
-   cd backend
-   ```
+| Usuario | Contraseña | Rol |
+|---|---|---|
+| `admin@local.test` | `DemoAdmin123!` | admin |
+| `demo@local.test` | `DemoTrader123!` | user |
+| `student1@local.test` | `DemoTrader123!` | user |
 
-2. Crear un entorno virtual:
-   ```bash
-   python -m venv venv
-   ```
+Clase demo: código `DEMO01`.
 
-3. Activar el entorno virtual (opcional):
-   - En Windows:
-     ```bash
-     .\venv\Scripts\Activate
-     ```
-   - En Linux/Mac:
-     ```bash
-     source venv/bin/activate
-     ```
+## Reset
 
-4. Instalar dependencias:
-   ```bash
-   pip install -r requirements.txt
-   ```
+Conservando datos:
 
-5. Asegúrate de que las siguientes librerías estén instaladas:
-   ```bash
-   pip install python-dotenv pymysql
-   ```
-
-7. Verifica que el archivo `.env` exista en la carpeta del backend con el siguiente contenido:
-   ```
-   DB_USER=usuario
-   DB_PASSWORD=***REMOVED***
-   DB_NAME=simulador_bolsa
-   DB_HOST=localhost
-   SECRET_KEY=***REMOVED***
-   ```
-
-8. Inicializar la base de datos:
-   ```bash
-   python initialize_db.py
-   ```
-
-9. Iniciar  backend (tarda unos segundos):
-   ```bash
-   python main.py
-   ```
-10. Inicia el servidor backend (tarda unos segundos):
-   ```bash
-   python -m uvicorn main:app --reload
-   ```
-   El backend estará disponible en http://localhost:8000
-   Puedes acceder a los GET y POST de FastAPI en http://localhost:8000/docs
-
-### 4. Configurar el Frontend
-
-1. Abre otra terminal y navega al directorio del frontend:
-   ```bash
-   cd ../frontend
-   ```
-
-2. Instalar dependencias:
-   ```bash
-   npm install
-   ```
-
-3. Iniciar el servidor de desarrollo:
-   ```bash
-   npm run dev
-   ```
-   El frontend estará disponible en http://localhost:5173
-
-## Uso de la aplicación
-
-1. Abre tu navegador y navega a http://localhost:5173
-2. Regístrate con los usuarios que desees y el usuario admin estará registrado, útil para poder realizar el CRUD en el apartado de noticias.
-
-    - usuario = admin@admin
-    - contraseña = admin 
-
-3. Explora las diferentes funcionalidades:
-   - Dashboard: Visualiza tu cartera y rendimiento
-   - Comprar/Vender acciones: Realiza operaciones en el mercado
-   - Aulas: Únete o crea competiciones de trading
-   - Noticias: Mantente informado sobre el mercado
-
-## SQL
-He dejado el SQL que yo he utilizado con varios users con diferentes cuentas. Lo adjunto por si quereis jugar un poco y ver con algunos perfiles con varias estadísticas de varios días de uso...
-
-Los emails podeís visualizarlo desde la base de datos, las contraseñas utilizadas en la mayoría de usuarios es: "***REMOVED***". luan@luan tiene varias cosas por ejemplo.
-
-Se puede importar desde phpMyAdmin.
-
-## Resolución de problemas comunes
-
-### Errores de importación en el backend
-
-Si encuentras errores como `ModuleNotFoundError: No module named 'backend'` o `ImportError: attempted relative import with no known parent package`, asegúrate de que todas las importaciones en los archivos de Python sean absolutas.
-
-### Errores de conexión a la base de datos
-
-Verifica que:
-- El servicio de Docker esté funcionando correctamente (`docker ps`)
-- Las credenciales en el archivo `.env` coincidan con las del `docker-compose.yml`
-- El puerto 3306 esté disponible y no bloqueado por un firewall
-
-### Problemas con las dependencias del frontend
-
-Si encuentras errores con las dependencias:
-```bash
-npm cache clean --force
-rm -rf node_modules
-npm install
+```powershell
+docker compose down
 ```
 
-### Otros errores (no debería) contáctame
-Correo: lechartfon1@educacion.navarra.es
+Borrando la base local (destructivo):
+
+```powershell
+docker compose down -v --remove-orphans
+docker compose up --build
+```
+
+## Arquitectura
+
+```text
+db (MySQL) -> migrate (Alembic) -> seed (datos sintéticos) -> api (FastAPI) -> web (React/Nginx)
+phpMyAdmin opcional bajo el perfil `tools`
+```
+
+- Las migraciones viven en `backend/migrations/`.
+- El seed sintético e idempotente vive en `backend/seed.py`.
+- El frontend usa `/api` (proxy Nginx en Docker, proxy Vite en modo host).
+- El precio de compra/venta lo decide el servidor a partir del último `stock_prices`; el cliente solo envía `company_id` y `quantity`.
+
+## Modo host (opcional, desarrollo)
+
+```powershell
+docker compose up -d db
+Copy-Item backend\.env.example backend\.env
+cd backend
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+python migrate.py
+python seed.py
+uvicorn main:app --reload --port 8000
+```
+
+En otra terminal:
+
+```powershell
+cd frontend
+npm ci
+npm run dev
+```
+
+## Tests
+
+Backend (SQLite temporal, sin Docker):
+
+```powershell
+cd backend
+python -m pytest tests -q
+```
+
+Frontend:
+
+```powershell
+cd frontend
+npm ci
+npm run lint
+npm run build
+npm audit --omit=dev
+```
+
+Smoke test manual tras `docker compose up --build`: login demo, listar empresas, ver gráfico, comprar, vender, crear/unirse a clase, ver leaderboard, CRUD de noticias como admin.
+
+## Limitaciones conocidas
+
+- JWT en `localStorage`: aceptable para demo local, no para producción.
+- Sin rate limiting, verificación de email ni MFA.
+- Gráficos con datos sintéticos.
+- Sin despliegue productivo: sin TLS, WAF ni backups remotos.
+
+## Licencia
+
+MIT. Ver `LICENSE`. Revisa también la licencia de Highcharts y el origen de imágenes antes de reutilizarlas comercialmente.

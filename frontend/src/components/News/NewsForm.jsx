@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
+import { api } from '../../lib/api';
 import {
   Dialog,          
   DialogTitle,     
@@ -19,6 +20,16 @@ const FormularioNoticias = ({ open, onClose, initialData, onSuccess }) => {
   const [imagenUrl, setImagenUrl] = useState('');
   const [cargando, setCargando] = useState(false);
   const [mensajeError, setMensajeError] = useState('');
+
+  const isHttpUrl = (value) => {
+    try {
+      const parsed = new URL(value);
+      return parsed.protocol === 'http:' || parsed.protocol === 'https:';
+    } catch {
+      return false;
+    }
+  };
+
   useEffect(() => {
     if (open) {
       if (initialData) {
@@ -35,54 +46,49 @@ const FormularioNoticias = ({ open, onClose, initialData, onSuccess }) => {
       setMensajeError('');
     }
   }, [open, initialData]);
-  const enviarFormulario = () => {
+  const enviarFormulario = async () => {
     if (!titulo.trim() || !contenido.trim() || !enlace.trim()) {
+      setMensajeError(t('newsForm.requiredError'));
+      return;
+    }
+
+    if (!isHttpUrl(enlace.trim())) {
+      setMensajeError(t('newsForm.requiredError'));
+      return;
+    }
+
+    if (imagenUrl.trim() && !isHttpUrl(imagenUrl.trim())) {
       setMensajeError(t('newsForm.requiredError'));
       return;
     }
 
     // Activamos indicador de carga
     setCargando(true);
+    setMensajeError('');
 
     const datosFormulario = {
       title: titulo.trim(),
       content: contenido.trim(),
       url: enlace.trim(),
-      image_url: imagenUrl.trim() || null 
+      image_url: imagenUrl.trim() || null
     };
 
-    const token = localStorage.getItem('token');
-    
-    const opcionesPeticion = {
-      method: initialData ? 'PUT' : 'POST', 
-      headers: {
-        'Content-Type': 'application/json', 
-        'Authorization': `Bearer ${token}`  
-      },
-      body: JSON.stringify(datosFormulario) 
-    };   
-    const urlServidor = initialData
-      ? `http://localhost:8000/news/${initialData.id}` 
-      : 'http://localhost:8000/news/';                 
-
-    fetch(urlServidor, opcionesPeticion)
-      .then(respuesta => {
-        if (!respuesta.ok) {
-          throw new Error(`Error ${respuesta.status}: ${respuesta.statusText}`);
-        }
-        return respuesta.json();
-      })
-      .then(datos => {
-        if (onSuccess) onSuccess(datos);
-        onClose();
-      })
-      .catch(error => {
-        console.error('¡Error al guardar la noticia!', error);
-        setMensajeError(`Error: ${error.message}`);
-      })
-      .finally(() => {
-        setCargando(false);
-      });
+    try {
+      let datos;
+      if (initialData) {
+        const respuesta = await api.put(`/news/${initialData.id}`, datosFormulario);
+        datos = respuesta.data;
+      } else {
+        const respuesta = await api.post('/news/', datosFormulario);
+        datos = respuesta.data;
+      }
+      if (onSuccess) onSuccess(datos);
+      onClose();
+    } catch (error) {
+      setMensajeError(error.response?.data?.detail || `Error: ${error.message}`);
+    } finally {
+      setCargando(false);
+    }
   };
   return (
     <Dialog

@@ -1,6 +1,6 @@
-import React, { useState } from "react";
-import axios from "axios";
+import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import { api } from "../../lib/api";
 import {
   Box,
   Typography,
@@ -18,7 +18,6 @@ import { useTranslation } from "react-i18next";
 const FormularioRegistro = () => {
   const { t } = useTranslation();
   const [datosFormulario, setDatosFormulario] = useState({
-    nombreUsuario: "",
     correo: "",
     ***REMOVED***: "",
     confirmarContrasena: "",
@@ -106,23 +105,17 @@ const FormularioRegistro = () => {
     }
 
     setErrorEnvio("");
-    
+
     const datosUsuario = {
-      username: datosFormulario.nombreUsuario,
-      email: datosFormulario.correo,
+      email: datosFormulario.correo.trim(),
       password: datosFormulario.***REMOVED***,
     };
 
     try {
-      const respuesta = await axios.post(
-        "http://localhost:8000/register",
-        datosUsuario
-      );
-      console.log("¡Registro completado con éxito!", respuesta.data);
+      await api.post("/register", datosUsuario);
       alert(t("register.successAlert"));
       navegar("/login");
-    } catch (error) {
-      console.error("Error durante el registro:", error.response);
+    } catch {
       setErrorEnvio(t("register.registerError"));
     }
   };
@@ -185,22 +178,8 @@ const FormularioRegistro = () => {
               margin="normal"
               required
               fullWidth
-              id="nombreUsuario"
-              label={t("register.username")}
-              name="nombreUsuario"
-              autoComplete="username"
-              autoFocus
-              value={datosFormulario.nombreUsuario}
-              onChange={manejarCambio}
-              variant="outlined"
-              size="large"
-            />
-            
-            <TextField
-              margin="normal"
-              required
-              fullWidth
               id="correo"
+              autoFocus
               label={t("register.email")}
               name="correo"
               autoComplete="email"

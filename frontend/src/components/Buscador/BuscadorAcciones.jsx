@@ -1,20 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import { 
-  TextField, 
-  ListItem, 
-  ListItemText, 
-  Box, 
+import {
+  TextField,
+  ListItem,
+  ListItemText,
+  Box,
   Autocomplete
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import BusinessIcon from '@mui/icons-material/Business';
 import { useTranslation } from 'react-i18next';
+import { api } from '../../lib/api';
 
 const BuscadorAcciones = ({ onSelectEmpresa }) => {
     const { t } = useTranslation();
-    const [busqueda, setBusqueda] = useState('');
-    const [resultados, setResultados] = useState([]);
     const [empresas, setEmpresas] = useState([]);
     const [loading, setLoading] = useState(false);
     const [open, setOpen] = useState(false);
@@ -23,16 +21,8 @@ const BuscadorAcciones = ({ onSelectEmpresa }) => {
         const fetchEmpresas = async () => {
             setLoading(true);
             try {
-                const token = localStorage.getItem('token');
-                const response = await axios.get('http://localhost:8000/empresas', {
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
-                });
-                console.log('Empresas recibidas del backend:', response.data);
+                const response = await api.get('/empresas');
                 setEmpresas(response.data);
-            } catch (error) {
-                console.error('Error al obtener las empresas:', error);
             } finally {
                 setLoading(false);
             }
@@ -42,9 +32,6 @@ const BuscadorAcciones = ({ onSelectEmpresa }) => {
     }, []);
 
     const handleSeleccion = (empresa) => {
-        console.log('Empresa seleccionada:', empresa);
-        setBusqueda(empresa.name);
-        setResultados([]);
         setOpen(false);
         onSelectEmpresa(empresa);
     };

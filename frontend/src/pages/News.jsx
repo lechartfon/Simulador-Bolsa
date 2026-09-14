@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Container,
   Typography,
@@ -17,10 +17,10 @@ import {
 import SearchIcon from '@mui/icons-material/Search';
 import AddIcon from '@mui/icons-material/Add';
 import { getAllNews, deleteNews } from '../utils/newsService';
+import { getStoredUser } from '../lib/api';
 import NewsCard from '../components/News/NewsCard';
 import FormularioNoticias from '../components/News/NewsForm';
 import DeleteConfirmationDialog from '../components/News/DeleteConfirmationDialog';
-import Layout from '../components/Layout/Layout';
 import { useTranslation } from 'react-i18next';
 
 const News = () => {
@@ -40,9 +40,12 @@ const News = () => {
   const [newsToDelete, setNewsToDelete] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
   
-  // Verificar si el usuario es admin@admin
-  const userEmail = JSON.parse(localStorage.getItem('user'))?.email || '';
-  const isAdmin = userEmail === 'admin@admin';
+  // Verificar si el usuario es admin
+  const storedUser = getStoredUser();
+  const isAdmin =
+    storedUser?.role === 'admin' ||
+    (storedUser?.role == null &&
+      (storedUser?.email === 'admin@local.test' || storedUser?.email === 'admin@admin'));
 
   const fetchNews = async () => {
     setLoading(true);
@@ -50,8 +53,7 @@ const News = () => {
     try {
       const data = await getAllNews();
       setNewsItems(data || []);
-    } catch (err) {
-      console.error('Error fetching news:', err);
+    } catch {
       setError(t('news.loadError'));
     } finally {
       setLoading(false);
@@ -111,8 +113,7 @@ const News = () => {
       await deleteNews(newsToDelete);
      
       setNewsItems(prevItems => prevItems.filter(item => item.id !== newsToDelete));
-    } catch (err) {
-      console.error('Error deleting news:', err);
+    } catch {
       setError(t('news.deleteError'));
       await fetchNews();
     } finally {

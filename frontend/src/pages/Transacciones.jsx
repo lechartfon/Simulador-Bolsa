@@ -1,6 +1,6 @@
-import React, { useRef, useState, useEffect } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import { api } from '../lib/api';
 import StockChart from './../components/Charts/StockChart';
 import CompraAcciones from './../components/ComprarAcciones/CompraAcciones';
 import BuscadorAcciones from './../components/Buscador/BuscadorAcciones';
@@ -34,21 +34,15 @@ const TransaccionesPage = () => {
       }
       
       // Hacer petición al servidor
-      const response = await axios.get('http://localhost:8000/wallet', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
+      const response = await api.get('/wallet');
       
       // Guardar el saldo si es correcto
-      if (response.data && response.data.balance) {
+      if (response.data && response.data.balance != null) {
         setDineroDisponible(response.data.balance);
       } else {
         setError(t('transactions.loadBalanceError'));
       }
     } catch (error) {
-      console.error("Error al cargar el saldo:", error);
-      
       if (error.response && error.response.status === 401) {
         // Si hay error de autenticación, redirigir al login
         localStorage.removeItem('token');
@@ -74,9 +68,14 @@ const TransaccionesPage = () => {
   const handleEmpresaSeleccionada = (empresa) => {
     setEmpresaSeleccionada(empresa);
   };
-  const handleCompra = async (precioTotal) => {
-    const nuevoSaldo = dineroDisponible - precioTotal;
-    setDineroDisponible(Math.round(nuevoSaldo * 100) / 100);
+  const handleCompra = async (total) => {
+    const amount = Number(total);
+    if (Number.isFinite(amount)) {
+      setDineroDisponible((prev) => {
+        if (prev == null) return prev;
+        return Math.round((prev - amount) * 100) / 100;
+      });
+    }
     
     // Actualizar el saldo en el header
     if (window.updateHeaderWallet) {

@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import axios from 'axios';
+import { useState } from 'react';
+import { api } from '../../lib/api';
 import {
   Box,
   Typography,
@@ -32,22 +32,12 @@ const JoinClassroom = ({ onClassroomJoined }) => {
     setError('');
 
     try {
-      const token = localStorage.getItem('token');
-      const authAxios = axios.create({
-        baseURL: 'http://localhost:8000',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
-
-      await authAxios.post('/classrooms/join', { code });
+      await api.post('/classrooms/join', { code });
       setCode('');
       setIsLoading(false);
       onClassroomJoined();
     } catch (error) {
       setIsLoading(false);
-      console.error('Error al unirse a la clase:', error);
       if (error.response && error.response.data) {
         setError(error.response.data.detail || t('joinClassroom.joinError'));
       } else {

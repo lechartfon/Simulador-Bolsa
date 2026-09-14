@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import { useState, useEffect } from 'react';
+import { api } from '../../lib/api';
 import { 
   Typography, 
   Box, 
@@ -43,24 +43,13 @@ const TablaClasificacion = ({ classroom }) => {
     setError('');
 
     try {
-      const token = localStorage.getItem('token');
-      const clienteHTTP = axios.create({
-        baseURL: 'http://localhost:8000',
-        headers: {
-          'Authorization': `Bearer ${token}`, 
-          'Content-Type': 'application/json'
-        }
-      });
-
-      const respuesta = await clienteHTTP.get(`/classrooms/${classroom.id}/leaderboard`);
+      const respuesta = await api.get(`/classrooms/${classroom.id}/leaderboard`);
       
       setRanking(respuesta.data);
       
       setCargando(false);
     } catch (error) {
       setCargando(false);
-      
-      console.error('¡Ups! No pudimos cargar la clasificación:', error);
       
       if (error.response && error.response.data) {
         setError(error.response.data.detail || t('leaderboard.loadError'));

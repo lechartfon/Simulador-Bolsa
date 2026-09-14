@@ -1,5 +1,6 @@
-import React, { useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import Highcharts from 'highcharts';
+import { Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 
 const GraficaValorCuenta = ({ accountValue, cashBalance, stocksValue }) => { 
@@ -250,7 +251,12 @@ const GraficaValorCuenta = ({ accountValue, cashBalance, stocksValue }) => {
   }, [accountValue, cashBalance, stocksValue, i18n.language, t]);
 
   return (
-    <div ref={contenedorGrafica} style={{ width: '100%', height: '400px', marginBottom: '20px' }} />
+    <div style={{ width: '100%' }}>
+      <div ref={contenedorGrafica} style={{ width: '100%', height: '400px', marginBottom: '8px' }} />
+      <Typography variant="caption" color="text.secondary" sx={{ display: 'block', textAlign: 'center', pb: 1 }}>
+        {t('charts.simulated', { defaultValue: 'Datos simulados con fines educativos' })}
+      </Typography>
+    </div>
   );
 };
 

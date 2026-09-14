@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import axios from 'axios';
+import { api } from '../lib/api';
 import GraficaValorCuenta from '../components/Charts/AccountValueChart';
 import { 
   Container, 
@@ -48,17 +48,9 @@ const Dashboard = () => {
         return;
       }
 
-      const walletResponse = await axios.get('http://localhost:8000/wallet', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
+      const walletResponse = await api.get('/wallet');
       
-      const portfolioResponse = await axios.get('http://localhost:8000/portfolio', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
+      const portfolioResponse = await api.get('/portfolio');
       setPortfolio(portfolioResponse.data);
       
       let valorAcciones = 0;
@@ -112,7 +104,6 @@ const Dashboard = () => {
         peorAccion: peorAccion
       });
     } catch (error) {
-      console.error("Error al cargar datos:", error);
       if (error.response?.status === 401) {
         localStorage.removeItem('token');
         navigate('/login');
