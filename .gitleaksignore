@@ -1,0 +1,4 @@
+# Falsos positivos conocidos: secretos dummy usados SOLO en tests/CI local.
+# No son credenciales reales y nunca salen del entorno de test.
+2fe3dc49c872ac5b07b0f805e4fbeebfcecf02be:.github/workflows/ci.yml:generic-api-key:21
+2fe3dc49c872ac5b07b0f805e4fbeebfcecf02be:backend/tests/conftest.py:generic-api-key:4

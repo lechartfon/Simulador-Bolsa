@@ -41,7 +41,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          # Historial completo: con checkout shallow, gitleaks atribuye
+          # todo el árbol al HEAD y los ignores por fingerprint no casan.
+          fetch-depth: 0
       - name: Validate compose
         run: docker compose config
       - name: Secret scan (gitleaks)
-        uses: gitleaks/gitleaks-action@v2
+        uses: gitleaks/gitleaks-action@v3
